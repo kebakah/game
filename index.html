@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ትንሹ ቁጥር - ጨዋታ</title>
+<meta name="description" content="ከ1 እስከ 1000 ትንሹን ልዩ ቁጥር ገምተህ ሽልማት አሸንፍ! ኢርፎን፣ ስልክ፣ ቲቪ እና ሌሎችም።">
+<meta property="og:title" content="ትንሹ ቁጥር - ጨዋታ">
+<meta property="og:description" content="ከ1 እስከ 1000 ትንሹን ልዩ ቁጥር ገምተህ ሽልማት አሸንፍ! ኢርፎን፣ ስልክ፣ ቲቪ እና ሌሎችም።">
+<meta property="og:type" content="website">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-firestore-compat.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@500;600;700&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF7F0;
+    --ink:#1F2A24;
+    --ink-soft:#54615A;
+    --gold:#E8A93B;
+    --gold-dark:#C98C22;
+    --teal:#1B6B5A;
+    --teal-soft:#E4F1EC;
+    --red:#C1523D;
+    --red-soft:#F7E7E2;
+    --amber-soft:#FBF0DA;
+    --line:#E4DCCB;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Noto Sans Ethiopic','Work Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:78px;
+  }
+  h1,h2,h3,.serif{ font-family:'Noto Serif Ethiopic',serif; }
+  #app{ max-width:520px; margin:0 auto; min-height:100vh; position:relative; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 18px 14px; }
+  .brand{ display:flex; flex-direction:column; }
+  .brand .name{ font-family:'Noto Serif Ethiopic',serif; font-weight:600; font-size:22px; letter-spacing:-0.01em; }
+  .brand .sub{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .topbar-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .icon-round-btn{ background:none; border:1px solid var(--line); border-radius:50%; width:36px; height:36px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
+  .icon-round-btn svg{ width:18px; height:18px; }
+
+  /* ---- prize / round card ---- */
+  .round-wrap{ padding:4px 18px 8px; }
+  .prize-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+  .prize-card img{ width:100%; height:200px; object-fit:cover; display:block; background:var(--amber-soft); }
+  .prize-body{ padding:16px 18px 18px; }
+  .prize-label{ font-size:11.5px; color:var(--gold-dark); font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .prize-name{ font-family:'Noto Serif Ethiopic',serif; font-size:20px; font-weight:600; margin:4px 0 6px; }
+  .prize-desc{ font-size:13.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:14px; }
+  .stat-row{ display:flex; gap:10px; margin-bottom:16px; }
+  .stat-box{ flex:1; background:var(--teal-soft); border-radius:12px; padding:10px 12px; text-align:center; }
+  .stat-box.timer{ background:var(--amber-soft); }
+  .stat-box .stat-val{ font-family:'Noto Serif Ethiopic',serif; font-size:19px; font-weight:700; color:var(--teal); }
+  .stat-box.timer .stat-val{ color:var(--gold-dark); }
+  .stat-box .stat-lbl{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .btn-primary{
+    width:100%; background:var(--gold); color:var(--ink); border:none; border-radius:12px;
+    padding:14px; font-size:15px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;
+  }
+  .btn-primary:active{ background:var(--gold-dark); }
+  .btn-secondary{ background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:15px; font-weight:600; cursor:pointer; flex:1; }
+  .btn-outline-teal{ background:#fff; border:1px solid var(--teal); color:var(--teal); }
+  .btn-danger{ background:#fff; border:1px solid var(--red); color:var(--red); }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
+  .no-round{ text-align:center; padding:50px 30px; color:var(--ink-soft); font-size:14.5px; }
+  .no-round .serif{ font-size:19px; color:var(--ink); display:block; margin-bottom:6px; }
+
+  /* ---- rules ---- */
+  .rules-box{ margin:16px 18px 6px; background:var(--teal-soft); border-radius:14px; padding:14px 16px; }
+  .rules-box .rt{ font-weight:700; font-size:13.5px; color:var(--teal); margin-bottom:6px; }
+  .rules-box p{ margin:0; font-size:13px; line-height:1.65; color:var(--ink); }
+
+  .section-title{ padding:22px 18px 8px; font-family:'Noto Serif Ethiopic',serif; font-size:17px; font-weight:600; }
+
+  /* ---- forms ---- */
+  .back-btn{ padding:16px 18px 0; }
+  .back-btn button{ background:none; border:none; font-size:14px; color:var(--ink-soft); cursor:pointer; padding:0; font-family:'Noto Sans Ethiopic',sans-serif; }
+  .form-wrap{ padding:18px 18px 110px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .field .hint{ font-size:12px; color:var(--ink-soft); margin-top:5px; }
+  .field input[type=text], .field input[type=number], .field input[type=tel]{
+    width:100%; border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif;
+  }
+  textarea{
+    width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-family:'Noto Sans Ethiopic',sans-serif;
+    font-size:14px; resize:vertical; min-height:70px; background:#fff;
+  }
+  .fixed-bar{
+    position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto;
+    background:var(--cream); border-top:1px solid var(--line); padding:12px 18px 16px;
+    display:flex; gap:10px;
+  }
+
+  /* ---- payment ---- */
+  .pay-wrap{ padding:22px 18px 110px; }
+  .pay-summary{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:18px; }
+  .pay-summary .row{ display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0; color:var(--ink-soft); }
+  .pay-summary .row.total{ color:var(--ink); font-weight:700; font-size:15px; border-top:1px solid var(--line); margin-top:6px; padding-top:12px; }
+  .telebirr-card{ background:var(--teal); color:#fff; border-radius:16px; padding:20px; margin-bottom:16px; }
+  .telebirr-card .tb-label{ font-size:12.5px; opacity:.85; margin-bottom:10px; }
+  .telebirr-number-row{ display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,.12); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .telebirr-number{ font-family:'Noto Serif Ethiopic',serif; font-size:22px; font-weight:600; letter-spacing:0.02em; }
+  .copy-btn{ background:#fff; color:var(--teal); border:none; border-radius:8px; padding:8px 12px; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .tb-steps{ font-size:13px; line-height:1.7; opacity:.95; margin:0; padding-right:18px; }
+  .ref-note{ font-size:13px; background:rgba(255,255,255,.12); border-radius:8px; padding:10px 12px; margin-top:12px; }
+
+  /* ---- upload ---- */
+  .upload-wrap{ padding:22px 18px 110px; }
+  .drop-zone{ border:1.5px dashed var(--line); border-radius:14px; background:var(--card); padding:30px 16px; text-align:center; cursor:pointer; margin-bottom:16px; }
+  .drop-zone.has-file{ border-color:var(--teal); }
+  .drop-zone svg{ margin-bottom:8px; }
+  .drop-zone .dz-text{ font-size:13.5px; color:var(--ink-soft); }
+  .receipt-preview{ width:100%; max-height:260px; object-fit:contain; border-radius:12px; margin-bottom:14px; background:#f4f4f4; }
+
+  /* ---- entry / winners cards ---- */
+  .entry-card{ background:var(--card); border:1px solid var(--line); border-radius:14px; margin:0 18px 14px; padding:16px; }
+  .entry-card.winner{ border-color:var(--gold); background:var(--amber-soft); }
+  .entry-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+  .entry-prize{ font-weight:600; font-size:14.5px; }
+  .entry-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .status-badge{ font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+  .status-pending_payment{ background:var(--amber-soft); color:var(--gold-dark); }
+  .status-submitted{ background:var(--amber-soft); color:var(--gold-dark); }
+  .status-confirmed{ background:var(--teal-soft); color:var(--teal); }
+  .status-rejected{ background:var(--red-soft); color:var(--red); }
+  .status-winner{ background:var(--gold); color:var(--ink); }
+  .winner-banner{ text-align:center; padding:50px 30px 20px; }
+  .winner-banner .serif{ font-size:22px; margin:14px 0 8px; }
+  .winner-banner p{ color:var(--ink-soft); font-size:14px; line-height:1.6; }
+  .empty{ text-align:center; color:var(--ink-soft); padding:50px 30px; font-size:14.5px; }
+  .empty .serif{ font-size:19px; color:var(--ink); display:block; margin-bottom:6px; }
+
+  .wcard{ display:flex; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); align-items:center; }
+  .wcard img{ width:56px; height:56px; border-radius:10px; object-fit:cover; background:var(--amber-soft); }
+  .wcard .wname{ font-weight:600; font-size:14px; }
+  .wcard .wmeta{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  .wcard .wguess{ font-family:'Noto Serif Ethiopic',serif; color:var(--teal); font-weight:700; font-size:15px; }
+
+  /* ---- bottom tab nav ---- */
+  .tabbar{ position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto; background:#fff; border-top:1px solid var(--line); display:flex; }
+  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 8px; cursor:pointer; color:var(--ink-soft); font-size:11px; position:relative; }
+  .tab.active{ color:var(--teal); }
+  .tab svg{ width:20px; height:20px; }
+  .tab .badge{ position:absolute; top:4px; right:22%; background:var(--red); color:#fff; font-size:10px; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px; }
+
+  /* ---- admin ---- */
+  .admin-subnav{ display:flex; gap:8px; padding:0 18px 12px; }
+  .admin-subnav button{ flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:#fff; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-soft); font-family:'Noto Sans Ethiopic',sans-serif; }
+  .admin-subnav button.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .img-picker{ display:flex; gap:10px; align-items:center; }
+  .img-picker img{ width:64px; height:64px; border-radius:10px; object-fit:cover; background:var(--amber-soft); }
+  .file-btn{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; font-size:13px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; }
+  .admin-entry{ background:var(--card); border:1px solid var(--line); border-radius:14px; margin:0 18px 12px; padding:14px; }
+  .admin-entry .ae-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+  .admin-entry .ae-name{ font-weight:600; font-size:14px; }
+  .admin-entry .ae-phone{ font-size:12.5px; color:var(--ink-soft); }
+  .admin-entry .ae-guess{ font-family:'Noto Serif Ethiopic',serif; font-weight:700; color:var(--teal); font-size:20px; margin:6px 0; }
+  .admin-entry img.receipt-thumb{ width:100%; max-height:220px; object-fit:contain; border-radius:10px; margin:8px 0; background:#f4f4f4; }
+  .admin-actions{ display:flex; gap:8px; margin-top:10px; }
+  .admin-actions button{ flex:1; border-radius:10px; padding:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; }
+  .kv{ display:flex; justify-content:space-between; font-size:13.5px; padding:6px 0; color:var(--ink-soft); }
+  .kv b{ color:var(--ink); }
+  .note-box{ background:var(--amber-soft); border-radius:10px; padding:12px 14px; font-size:13.5px; margin:12px 0; }
+  .footer-note{ text-align:center; padding:26px 18px 10px; }
+  .footer-note a{ color:var(--ink-soft); font-size:12px; text-decoration:underline; cursor:pointer; }
+  .toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:10px; font-size:13px; z-index:999; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ CONFIG ============ */
+const ADMIN_PASSWORD = 'gebeya2024';
+const TELEBIRR_NUMBER = '930533061';
+
+/* ============ FIREBASE (shared project, dedicated game_ collections) ============ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCAjISTEbYbPfbx-xCacA6aLGO5xBqpa58",
+  authDomain: "eth-online-gebeya.firebaseapp.com",
+  projectId: "eth-online-gebeya",
+  storageBucket: "eth-online-gebeya.firebasestorage.app",
+  messagingSenderId: "942316634673",
+  appId: "1:942316634673:web:008804f66a36436a07cb10"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ============ STATE ============ */
+const state = {
+  screen: 'home',
+  rounds: [],
+  entries: [],
+  player: JSON.parse(localStorage.getItem('game_player')||'null') || { name:'', phone:'' },
+  myEntryIds: JSON.parse(localStorage.getItem('game_my_entries')||'[]'),
+  isAdmin: sessionStorage.getItem('isAdmin')==='1',
+  currentEntryId: null,
+  viewingEntryId: null,
+  pendingImageData: null,
+  loaded: false,
+  _roundsReady: false,
+  _entriesReady: false,
+};
+
+/* ============ REALTIME SYNC ============ */
+function _maybeFinishLoading(){
+  if (state._roundsReady && state._entriesReady && !state.loaded){ state.loaded = true; render(); }
+}
+function setupRealtimeSync(){
+  db.collection('game_rounds').orderBy('createdAt','desc').onSnapshot(snap=>{
+    state.rounds = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    state._roundsReady = true;
+    if (state.loaded) render(); else _maybeFinishLoading();
+  }, err=>{ console.error(err); showToast('ዙሮችን መጫን አልተቻለም'); });
+
+  db.collection('game_entries').orderBy('createdAt','desc').onSnapshot(snap=>{
+    state.entries = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    state._entriesReady = true;
+    if (state.loaded) render(); else _maybeFinishLoading();
+  }, err=>{ console.error(err); showToast('ተሳታፊዎችን መጫን አልተቻለም'); });
+}
+async function fsSaveRound(r){ try{ await db.collection('game_rounds').doc(r.id).set(r); } catch(e){ console.error(e); showToast('ዙር ማስቀመጥ አልተቻለም'); } }
+async function fsSaveEntry(e){ try{ await db.collection('game_entries').doc(e.id).set(e); } catch(e2){ console.error(e2); showToast('ተሳትፎ ማስቀመጥ አልተቻለም'); } }
+
+/* ============ HELPERS ============ */
+function fmt(n){ return Number(n).toLocaleString('en-US'); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1800); }
+function go(screen){ state.screen = screen; render(); window.scrollTo(0,0); }
+function savePlayer(name, phone){ state.player = { name, phone }; localStorage.setItem('game_player', JSON.stringify(state.player)); }
+function addMyEntryLocal(id){ state.myEntryIds.push(id); localStorage.setItem('game_my_entries', JSON.stringify(state.myEntryIds)); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(s){ return escapeHtml(s); }
+function fmtCountdown(ms){
+  if (ms<0) ms=0;
+  const totalSec = Math.floor(ms/1000);
+  const h = Math.floor(totalSec/3600), m = Math.floor((totalSec%3600)/60), s = totalSec%60;
+  const p = n=>String(n).padStart(2,'0');
+  return h>0 ? `${p(h)}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
+}
+function maskPhone(p){ p = String(p||''); return p.length>=6 ? p.slice(0,4)+'***'+p.slice(-2) : p; }
+function resizeImageFile(file, maxW, cb){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function copyNumber(){
+  if (navigator.clipboard) navigator.clipboard.writeText(TELEBIRR_NUMBER).then(()=>showToast('ቁጥሩ ተቀድቷል'));
+  else showToast(TELEBIRR_NUMBER);
+}
+function getOpenRound(){ return state.rounds.find(r=>r.status==='open') || null; }
+function entriesForRound(id){ return state.entries.filter(e=>e.roundId===id); }
+function statusLabel(s){
+  return { pending_payment:'በክፍያ ላይ', submitted:'በማጣራት ላይ', confirmed:'ተረጋግጧል', rejected:'አልተረጋገጠም', winner:'🏆 አሸናፊ' }[s] || s;
+}
+function prizeImg(r){ return r.prizeImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23FBF0DA"/></svg>'; }
+
+/* ============ ICONS ============ */
+const ICONS = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
+  ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V8z"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 5H4a3 3 0 003 3M17 5h3a3 3 0 01-3 3"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>',
+};
+
+/* ============ TOPBAR / TABBAR ============ */
+function renderTopbar(){
+  const adminBtn = `<button class="icon-round-btn" onclick="onGearClick()" title="Admin">${ICONS.gear}</button>`;
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <div class="name">ትንሹ ቁጥር</div>
+      <div class="sub">ልዩ የሆነውን ትንሹን ቁጥር ገምት, አሸንፍ!</div>
+    </div>
+    <div class="topbar-right">${adminBtn}</div>
+  </div>`;
+}
+function onGearClick(){
+  if (state.isAdmin){ go('admin'); return; }
+  const pw = prompt('የAስተዳዳሪ የይለፍ ቃል፡');
+  if (pw === null) return;
+  if (pw === ADMIN_PASSWORD){ state.isAdmin = true; sessionStorage.setItem('isAdmin','1'); showToast('የAስተዳዳሪ መዳረሻ ተከፍቷል'); go('admin'); }
+  else showToast('የተሳሳተ የይለፍ ቃል');
+}
+function renderTabbar(active){
+  const tabs = [
+    {id:'home', label:'ቤት', icon:ICONS.home},
+    {id:'myentry', label:'የኔ ተሳትፎ', icon:ICONS.ticket},
+    {id:'winners', label:'አሸናፊዎች', icon:ICONS.trophy},
+  ];
+  return `<div class="tabbar">${tabs.map(t=>`
+    <div class="tab ${active===t.id?'active':''}" onclick="go('${t.id}')">
+      ${t.icon}<span>${t.label}</span>
+    </div>`).join('')}</div>`;
+}
+
+/* ============ SCREEN: HOME ============ */
+function renderHome(){
+  const round = getOpenRound();
+  const remain = round ? round.endAt - Date.now() : 0;
+  const isOpen = round && remain > 0;
+  return `
+  ${renderTopbar()}
+  <div class="round-wrap">
+    ${round ? `
+    <div class="prize-card">
+      <img src="${prizeImg(round)}" alt="">
+      <div class="prize-body">
+        <div class="prize-label">የዙር ሽልማት</div>
+        <div class="prize-name">${escapeHtml(round.prizeName)}</div>
+        ${round.prizeDesc ? `<div class="prize-desc">${escapeHtml(round.prizeDesc)}</div>` : ''}
+        <div class="stat-row">
+          <div class="stat-box timer">
+            <div class="stat-val" id="countdownVal">${isOpen ? fmtCountdown(remain) : '00:00'}</div>
+            <div class="stat-lbl">ቀሪ ጊዜ</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">${entriesForRound(round.id).length}</div>
+            <div class="stat-lbl">ተሳታፊዎች</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">${fmt(round.entryFee)}</div>
+            <div class="stat-lbl">ብር (መግቢያ)</div>
+          </div>
+        </div>
+        <button class="btn-primary" ${isOpen?'':'disabled'} onclick="startJoin()">${isOpen ? 'ተሳተፍ' : 'ዙሩ ተጠናቋል'}</button>
+      </div>
+    </div>` : `
+    <div class="no-round"><span class="serif">ምንም ክፍት ዙር የለም</span>የሚቀጥለው ዙር በቅርቡ ይጀምራል፣ ትንሽ ቆይተህ ተመልከት።</div>
+    `}
+  </div>
+  <div class="rules-box">
+    <div class="rt">የጨዋታው ደንብ</div>
+    <p>ከ1 እስከ 1000 ባለው ውስጥ አንድ ቁጥር ምረጥ። ዙሩ ሲያልቅ፣ ማንም ሌላ ሰው ካልመረጠው (ልዩ ከሆኑ) ቁጥሮች ውስጥ ትንሹን ቁጥር የመረጠው ሰው አሸናፊ ይሆናል። ሁለት ወይም ከዚያ በላይ ሰዎች ተመሳሳይ ቁጥር ከመረጡ ያ ቁጥር ውድቅ ይሆናል።</p>
+  </div>
+  <div class="footer-note"><a onclick="onGearClick()">የAስተዳዳሪ መግቢያ</a></div>
+  ${renderTabbar('home')}`;
+}
+function tickTimer(){
+  if (state.screen !== 'home') return;
+  const round = getOpenRound();
+  if (!round) return;
+  const el = document.getElementById('countdownVal');
+  if (!el) return;
+  const remain = round.endAt - Date.now();
+  if (remain <= 0){ render(); return; }
+  el.textContent = fmtCountdown(remain);
+}
+setInterval(tickTimer, 1000);
+
+/* ============ JOIN FLOW ============ */
+function startJoin(){
+  const round = getOpenRound();
+  if (!round || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  const existing = state.player.phone ? entriesForRound(round.id).find(e=>e.phone===state.player.phone) : null;
+  if (existing){ showToast('በዚህ ዙር ውስጥ ቀድሞ ተሳትፈዋል'); state.viewingEntryId = existing.id; go('entry-detail'); return; }
+  go('join');
+}
+function renderJoin(){
+  const round = getOpenRound();
+  if (!round){ go('home'); return ''; }
+  return `
+  <div class="back-btn"><button onclick="go('home')">&rarr; ወደ ኋላ</button></div>
+  <div class="form-wrap">
+    <h2 class="serif" style="margin:10px 0 6px;">ተሳተፍ</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።</p>
+    <div class="field">
+      <label>ሙሉ ስም</label>
+      <input type="text" id="joinName" placeholder="ለምሳሌ፡ አበበ ከበደ" value="${escapeAttr(state.player.name||'')}">
+    </div>
+    <div class="field">
+      <label>ስልክ ቁጥር</label>
+      <input type="tel" id="joinPhone" placeholder="09XXXXXXXX" value="${escapeAttr(state.player.phone||'')}">
+    </div>
+    <div class="field">
+      <label>ቁጥርህን ምረጥ (1 - 1000)</label>
+      <input type="number" id="joinGuess" min="1" max="1000" placeholder="ለምሳሌ፡ 17">
+      <div class="hint">ምክር፡ ልዩ ሊሆን የሚችል ትንሽ ቁጥር ምረጥ።</div>
+    </div>
+  </div>
+  <div class="fixed-bar">
+    <button class="btn-primary" onclick="submitJoin()">ቀጥል ወደ ክፍያ</button>
+  </div>`;
+}
+function submitJoin(){
+  const name = val('joinName'), phone = val('joinPhone');
+  const guess = parseInt(val('joinGuess'), 10);
+  if (!name || !phone){ showToast('ስም እና ስልክ ቁጥር ያስፈልጋል'); return; }
+  if (!Number.isInteger(guess) || guess < 1 || guess > 1000){ showToast('ከ1 እስከ 1000 ትክክለኛ ቁጥር አስገባ'); return; }
+  const round = getOpenRound();
+  if (!round || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  if (entriesForRound(round.id).some(e=>e.phone===phone)){ showToast('በዚህ ዙር ውስጥ ቀድሞ ተሳትፈዋል'); go('home'); return; }
+  savePlayer(name, phone);
+  const entry = { id: uid().toUpperCase(), roundId: round.id, name, phone, guess, receipt:null, note:'', status:'pending_payment', createdAt: Date.now() };
+  state.entries.unshift(entry);
+  state.currentEntryId = entry.id;
+  fsSaveEntry(entry);
+  addMyEntryLocal(entry.id);
+  go('pay');
+}
+
+/* ============ PAYMENT ============ */
+function renderPay(){
+  const entry = state.entries.find(e=>e.id===state.currentEntryId);
+  const round = entry ? state.rounds.find(r=>r.id===entry.roundId) : null;
+  if (!entry || !round){ go('home'); return ''; }
+  return `
+  <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+  <div class="pay-wrap">
+    <h2 class="serif" style="margin:10px 0 16px;">ክፍያ ፈጽም</h2>
+    <div class="pay-summary">
+      <div class="row"><span>ቁጥርህ</span><span>${entry.guess}</span></div>
+      <div class="row total"><span>የመግቢያ ክፍያ</span><span>${fmt(round.entryFee)} ብር</span></div>
+    </div>
+    <div class="telebirr-card">
+      <div class="tb-label">በቴሌብር ክፈል</div>
+      <div class="telebirr-number-row">
+        <span class="telebirr-number">${TELEBIRR_NUMBER}</span>
+        <button class="copy-btn" onclick="copyNumber()">ቅዳ</button>
+      </div>
+      <ol class="tb-steps">
+        <li>የቴሌብር መተግበሪያውን ክፈት ወይም የUSSD ኮድ ደውል</li>
+        <li><strong>${fmt(round.entryFee)} ብር</strong> ወደ ${TELEBIRR_NUMBER} ላክ</li>
+        <li>የክፍያ ማረጋገጫ ቅጽበታዊ ገጽ እይታ ወይም መልእክት አስቀምጥ &mdash; ቀጥሎ ትሰቅለዋለህ</li>
+      </ol>
+      <div class="ref-note">ማጣቀሻ፡ ተሳትፎ #${entry.id}</div>
+    </div>
+  </div>
+  <div class="fixed-bar">
+    <button class="btn-primary" onclick="go('upload')">ከፍያለሁ</button>
+  </div>`;
+}
+
+/* ============ UPLOAD RECEIPT ============ */
+function renderUpload(){
+  const entry = state.entries.find(e=>e.id===state.currentEntryId);
+  if (!entry){ go('home'); return ''; }
+  const hasImg = !!state.pendingImageData;
+  return `
+  <div class="back-btn"><button onclick="go('pay')">&rarr; ወደ ኋላ</button></div>
+  <div class="upload-wrap">
+    <h2 class="serif" style="margin:10px 0 6px;">የክፍያ ደረሰኝ ስቀል</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">የቴሌብር ማረጋገጫህን ፎቶ ወይም ቅጽበታዊ ገጽ እይታ አስገባ፣ ክፍያህን እናረጋግጥልሃለን።</p>
+    ${hasImg ? `<img class="receipt-preview" src="${state.pendingImageData}">` : ''}
+    <div class="drop-zone ${hasImg?'has-file':''}" onclick="document.getElementById('receiptFile').click()">
+      ${ICONS.upload}
+      <div class="dz-text">${hasImg ? 'ሌላ ምስል ለመምረጥ ንካ' : 'ምስል ለመምረጥ ንካ'}</div>
+    </div>
+    <input type="file" id="receiptFile" accept="image/*" style="display:none" onchange="onReceiptChosen(event)">
+    <textarea id="entryNote" placeholder="ተጨማሪ መረጃ ካለ (አማራጭ)"></textarea>
+  </div>
+  <div class="fixed-bar">
+    <button class="btn-primary" ${hasImg?'':'disabled'} onclick="submitReceipt()">ደረሰኝ አስገባ</button>
+  </div>`;
+}
+function onReceiptChosen(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  resizeImageFile(file, 900, (dataUrl)=>{ state.pendingImageData = dataUrl; render(); });
+}
+function submitReceipt(){
+  const entry = state.entries.find(e=>e.id===state.currentEntryId);
+  if (!entry || !state.pendingImageData) return;
+  entry.receipt = state.pendingImageData;
+  entry.note = (document.getElementById('entryNote')||{}).value || '';
+  entry.status = 'submitted';
+  entry.submittedAt = Date.now();
+  fsSaveEntry(entry);
+  state.pendingImageData = null;
+  go('status');
+}
+function renderStatus(){
+  const entry = state.entries.find(e=>e.id===state.currentEntryId);
+  if (!entry){ go('home'); return ''; }
+  return `
+  <div class="winner-banner">
+    <div class="serif">ደረሰኝ ገብቷል!</div>
+    <p>ክፍያህ በቅርቡ ይረጋገጣል። ውጤቱን ለማየት ማንኛውም ጊዜ ወደ "የኔ ተሳትፎ" ትር ተመለስ።</p>
+  </div>
+  <div class="fixed-bar">
+    <button class="btn-primary" onclick="go('home')">ወደ ቤት ተመለስ</button>
+  </div>`;
+}
+
+/* ============ MY ENTRY ============ */
+function renderMyEntry(){
+  const mine = state.entries.filter(e=>state.myEntryIds.includes(e.id) || (state.player.phone && e.phone===state.player.phone))
+    .sort((a,b)=>b.createdAt-a.createdAt);
+  return `
+  <div class="topbar"><div class="brand"><div class="name">የኔ ተሳትፎ</div></div></div>
+  ${mine.length===0 ? `<div class="empty"><span class="serif">እስካሁን አልተሳተፍክም</span>ወደ ቤት ሄደህ የአሁኑን ዙር ተቀላቀል።</div>` :
+  mine.map(e=>{
+    const round = state.rounds.find(r=>r.id===e.roundId);
+    return `
+    <div class="entry-card ${e.status==='winner'?'winner':''}" onclick="viewEntry('${e.id}')">
+      <div class="entry-top">
+        <div>
+          <div class="entry-prize">${round ? escapeHtml(round.prizeName) : 'ዙር'}</div>
+          <div class="entry-sub">ቁጥርህ፡ ${e.guess}</div>
+        </div>
+        <span class="status-badge status-${e.status}">${statusLabel(e.status)}</span>
+      </div>
+    </div>`;
+  }).join('')}
+  ${renderTabbar('myentry')}`;
+}
+function viewEntry(id){ state.viewingEntryId = id; go('entry-detail'); }
+function renderEntryDetail(){
+  const e = state.entries.find(x=>x.id===state.viewingEntryId);
+  if (!e){ go('myentry'); return ''; }
+  const round = state.rounds.find(r=>r.id===e.roundId);
+  if (e.status === 'winner'){
+    return `
+    <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+    <div class="winner-banner">
+      <div class="serif">🏆 እንኳን ደስ አለህ! አሸንፈሃል</div>
+      <p>ቁጥርህ <strong>${e.guess}</strong> ልዩ እና ትንሹ ነበር። ሽልማትህን (${round?escapeHtml(round.prizeName):''}) ለመቀበል በ ${TELEBIRR_NUMBER} በኩል ወይም በተመዘገበው ስልክ ቁጥርህ በኩል እንገናኝሃለን።</p>
+    </div>
+    <div class="fixed-bar"><button class="btn-primary" onclick="go('home')">ወደ ቤት ተመለስ</button></div>`;
+  }
+  return `
+  <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+  <div class="pay-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0 16px;">
+      <h2 class="serif" style="margin:0;">ተሳትፎ #${e.id}</h2>
+      <span class="status-badge status-${e.status}">${statusLabel(e.status)}</span>
+    </div>
+    <div class="kv"><span>ሽልማት</span><b>${round?escapeHtml(round.prizeName):'-'}</b></div>
+    <div class="kv"><span>ቁጥርህ</span><b>${e.guess}</b></div>
+    <div class="kv"><span>ስም</span><b>${escapeHtml(e.name)}</b></div>
+    ${e.receipt ? `<img class="order-detail-receipt" style="width:100%; border-radius:12px; margin:14px 0;" src="${e.receipt}">` : ''}
+    ${e.status==='pending_payment' ? `<div class="note-box">ክፍያ ገና አልተጠናቀቀም። ቀጥል ወደ ክፍያ ገጽ ሂድ።</div>` : ''}
+    ${e.status==='rejected' ? `<div class="note-box">ክፍያህ ሊረጋገጥ አልቻለም። እባክህ ደረሰኝህን መልሰህ አረጋግጥ ወይም ድጋፍ አግኝ።</div>` : ''}
+  </div>
+  ${e.status==='pending_payment' ? `<div class="fixed-bar"><button class="btn-primary" onclick="state.currentEntryId='${e.id}'; go('pay')">ወደ ክፍያ ቀጥል</button></div>` : ''}`;
+}
+
+/* ============ WINNERS (PUBLIC HISTORY) ============ */
+function renderWinners(){
+  const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
+  return `
+  <div class="topbar"><div class="brand"><div class="name">ያለፉ አሸናፊዎች</div></div></div>
+  ${closed.length===0 ? `<div class="empty"><span class="serif">እስካሁን አሸናፊ የለም</span>የመጀመሪያው ዙር ሲጠናቀቅ አሸናፊዎች እዚህ ይታያሉ።</div>` :
+  closed.map(r=>{
+    const winner = r.winnerEntryId ? state.entries.find(e=>e.id===r.winnerEntryId) : null;
+    return `
+    <div class="wcard">
+      <img src="${prizeImg(r)}">
+      <div style="flex:1;">
+        <div class="wname">${escapeHtml(r.prizeName)}</div>
+        <div class="wmeta">${winner ? escapeHtml(winner.name)+' &middot; '+maskPhone(winner.phone) : 'ልዩ አሸናፊ አልነበረም'}</div>
+      </div>
+      ${winner ? `<div class="wguess">${winner.guess}</div>` : ''}
+    </div>`;
+  }).join('')}
+  ${renderTabbar('winners')}`;
+}
+
+/* ============ ADMIN ============ */
+function renderAdmin(){
+  if (!state.isAdmin){ go('home'); return ''; }
+  const sub = state._adminTab || 'round';
+  return `
+  <div class="section-title">አስተዳደር</div>
+  <div class="admin-subnav">
+    <button class="${sub==='round'?'active':''}" onclick="state._adminTab='round'; render();">የአሁኑ ዙር</button>
+    <button class="${sub==='history'?'active':''}" onclick="state._adminTab='history'; render();">ታሪክ</button>
+  </div>
+  ${sub==='round' ? renderAdminRound() : renderAdminHistory()}
+  ${renderTabbar('')}`;
+}
+function renderAdminRound(){
+  const round = getOpenRound();
+  if (!round){
+    const img = state.pendingImageData;
+    return `
+    <div class="form-wrap" style="padding-top:4px;">
+      <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 16px;">ምንም ክፍት ዙር የለም። አዲስ ዙር ጀምር።</p>
+      <div class="field">
+        <label>የሽልማት ምስል</label>
+        <div class="img-picker">
+          <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23FBF0DA%22/></svg>'}">
+          <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">ምስል ምረጥ</button>
+          <input type="file" id="prizeImgFile" accept="image/*" style="display:none" onchange="onPrizeImageChosen(event)">
+        </div>
+      </div>
+      <div class="field"><label>የሽልማት ስም</label><input type="text" id="prizeName" placeholder="ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ"></div>
+      <div class="field"><label>የሽልማት መግለጫ (አማራጭ)</label><textarea id="prizeDesc" placeholder="አጭር መግለጫ"></textarea></div>
+      <div class="field"><label>የመግቢያ ክፍያ (ብር)</label><input type="number" id="entryFee" placeholder="ለምሳሌ፡ 50"></div>
+      <div class="field"><label>የዙር ቆይታ (በደቂቃ)</label><input type="number" id="durationMin" placeholder="ለምሳሌ፡ 60"></div>
+    </div>
+    <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">ዙር ጀምር</button></div>`;
+  }
+  const remain = round.endAt - Date.now();
+  const entries = entriesForRound(round.id);
+  return `
+  <div class="round-wrap">
+    <div class="prize-card">
+      <img src="${prizeImg(round)}" alt="">
+      <div class="prize-body">
+        <div class="prize-name">${escapeHtml(round.prizeName)}</div>
+        <div class="stat-row">
+          <div class="stat-box timer"><div class="stat-val">${remain>0?fmtCountdown(remain):'00:00'}</div><div class="stat-lbl">ቀሪ ጊዜ</div></div>
+          <div class="stat-box"><div class="stat-val">${entries.length}</div><div class="stat-lbl">ተሳታፊዎች</div></div>
+          <div class="stat-box"><div class="stat-val">${entries.filter(e=>e.status==='confirmed').length}</div><div class="stat-lbl">የተረጋገጡ</div></div>
+        </div>
+        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600;" onclick="closeRoundAndAnnounce()">ዙር ዝጋና አሸናፊ አውጅ</button>
+      </div>
+    </div>
+  </div>
+  <div class="section-title" style="padding-top:6px;">ተሳታፊዎች</div>
+  ${entries.length===0 ? `<div class="empty">እስካሁን ተሳታፊ የለም።</div>` :
+  entries.map(e=>`
+    <div class="admin-entry">
+      <div class="ae-top">
+        <div><div class="ae-name">${escapeHtml(e.name)}</div><div class="ae-phone">${escapeHtml(e.phone)}</div></div>
+        <span class="status-badge status-${e.status}">${statusLabel(e.status)}</span>
+      </div>
+      <div class="ae-guess">${e.guess}</div>
+      ${e.note ? `<div class="note-box">"${escapeHtml(e.note)}"</div>` : ''}
+      ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}">` : `<div style="font-size:12.5px; color:var(--ink-soft);">ደረሰኝ ገና አልገባም</div>`}
+      ${e.status==='submitted' ? `
+      <div class="admin-actions">
+        <button class="btn-danger" onclick="setEntryStatus('${e.id}','rejected')">አትቀበል</button>
+        <button class="btn-primary" style="flex:1;" onclick="setEntryStatus('${e.id}','confirmed')">አረጋግጥ</button>
+      </div>` : ''}
+    </div>`).join('')}`;
+}
+function onPrizeImageChosen(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  resizeImageFile(file, 700, (dataUrl)=>{ state.pendingImageData = dataUrl; render(); });
+}
+function createRound(){
+  const prizeName = val('prizeName');
+  const prizeDesc = val('prizeDesc');
+  const entryFee = parseFloat(val('entryFee'));
+  const durationMin = parseInt(val('durationMin'), 10);
+  if (!prizeName){ showToast('የሽልማት ስም ያስፈልጋል'); return; }
+  if (!entryFee || entryFee<=0){ showToast('ትክክለኛ የመግቢያ ክፍያ አስገባ'); return; }
+  if (!durationMin || durationMin<=0){ showToast('ትክክለኛ የቆይታ ጊዜ (ደቂቃ) አስገባ'); return; }
+  const round = {
+    id: uid(), prizeName, prizeDesc, prizeImage: state.pendingImageData || null,
+    entryFee, durationMinutes: durationMin,
+    startAt: Date.now(), endAt: Date.now() + durationMin*60000,
+    status: 'open', winnerEntryId: null, createdAt: Date.now(),
+  };
+  state.rounds.unshift(round);
+  fsSaveRound(round);
+  state.pendingImageData = null;
+  showToast('ዙር ተጀምሯል');
+  render();
+}
+function setEntryStatus(id, status){
+  const e = state.entries.find(x=>x.id===id);
+  if (!e) return;
+  e.status = status;
+  fsSaveEntry(e);
+  showToast(status==='confirmed' ? 'ተረጋግጧል' : 'ውድቅ ተደርጓል');
+  render();
+}
+function closeRoundAndAnnounce(){
+  const round = getOpenRound();
+  if (!round) return;
+  if (!confirm('ዙሩን ዘግተህ አሸናፊ ማወጅ ትፈልጋለህ?')) return;
+  const confirmed = entriesForRound(round.id).filter(e=>e.status==='confirmed');
+  const counts = {};
+  confirmed.forEach(e=>{ counts[e.guess] = (counts[e.guess]||0) + 1; });
+  const uniqueEntries = confirmed.filter(e=>counts[e.guess]===1).sort((a,b)=>a.guess-b.guess);
+  const winner = uniqueEntries[0] || null;
+  round.status = 'closed';
+  round.closedAt = Date.now();
+  round.winnerEntryId = winner ? winner.id : null;
+  fsSaveRound(round);
+  if (winner){ winner.status = 'winner'; fsSaveEntry(winner); }
+  showToast(winner ? `🏆 አሸናፊ፡ ${winner.name} (${winner.guess})` : 'ልዩ አሸናፊ አልተገኘም');
+  render();
+}
+function renderAdminHistory(){
+  const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
+  return closed.length===0 ? `<div class="empty">እስካሁን የተዘጋ ዙር የለም።</div>` :
+  closed.map(r=>{
+    const winner = r.winnerEntryId ? state.entries.find(e=>e.id===r.winnerEntryId) : null;
+    const total = entriesForRound(r.id).length;
+    return `
+    <div class="admin-entry">
+      <div class="ae-top">
+        <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ተሳታፊዎች &middot; ${fmt(r.entryFee)} ብር</div></div>
+      </div>
+      ${winner ? `<div class="kv"><span>አሸናፊ</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${winner.guess}</b></div>` : `<div class="kv"><span>ውጤት</span><b>ልዩ አሸናፊ አልነበረም</b></div>`}
+    </div>`;
+  }).join('');
+}
+
+/* ============ ROUTER ============ */
+function render(){
+  const app = document.getElementById('app');
+  if (!state.loaded){ app.innerHTML = `<div class="empty" style="padding-top:120px;"><span class="serif">በመጫን ላይ…</span></div>`; return; }
+  const map = {
+    'home': renderHome, 'join': renderJoin, 'pay': renderPay, 'upload': renderUpload, 'status': renderStatus,
+    'myentry': renderMyEntry, 'entry-detail': renderEntryDetail, 'winners': renderWinners,
+    'admin': renderAdmin,
+  };
+  const fn = map[state.screen] || renderHome;
+  app.innerHTML = fn();
+}
+
+/* ============ BOOT ============ */
+(function boot(){
+  render();
+  setupRealtimeSync();
+})();
+</script>
+</body>
+</html>
