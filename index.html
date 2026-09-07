@@ -290,8 +290,12 @@ function escapeAttr(s){ return escapeHtml(s); }
 function fmtCountdown(ms){
   if (ms<0) ms=0;
   const totalSec = Math.floor(ms/1000);
-  const h = Math.floor(totalSec/3600), m = Math.floor((totalSec%3600)/60), s = totalSec%60;
+  const d = Math.floor(totalSec/86400);
+  const h = Math.floor((totalSec%86400)/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const s = totalSec%60;
   const p = n=>String(n).padStart(2,'0');
+  if (d>0) return `${d} ${d===1?'ቀን':'ቀናት'} ${p(h)}:${p(m)}:${p(s)}`;
   return h>0 ? `${p(h)}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
 }
 function maskPhone(p){ p = String(p||''); return p.length>=6 ? p.slice(0,4)+'***'+p.slice(-2) : p; }
@@ -705,7 +709,17 @@ function renderAdminRound(){
       <div class="field"><label>የሽልማት ስም</label><input type="text" id="prizeName" placeholder="ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ"></div>
       <div class="field"><label>የሽልማት መግለጫ (አማራጭ)</label><textarea id="prizeDesc" placeholder="አጭር መግለጫ"></textarea></div>
       <div class="field"><label>የመግቢያ ክፍያ (ብር)</label><input type="number" id="entryFee" placeholder="ለምሳሌ፡ 50"></div>
-      <div class="field"><label>የዙር ቆይታ (በደቂቃ)</label><input type="number" id="durationMin" placeholder="ለምሳሌ፡ 60"></div>
+      <div class="field">
+        <label>የዙር ቆይታ</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="durationVal" placeholder="ለምሳሌ፡ 2" style="flex:1;">
+          <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:#fff;">
+            <option value="minutes">ደቂቃ</option>
+            <option value="hours">ሰዓት</option>
+            <option value="days" selected>ቀን</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">ዙር ጀምር</button></div>`;
   }
@@ -755,10 +769,13 @@ function createRound(){
   const prizeName = val('prizeName');
   const prizeDesc = val('prizeDesc');
   const entryFee = parseFloat(val('entryFee'));
-  const durationMin = parseInt(val('durationMin'), 10);
+  const durationVal = parseFloat(val('durationVal'));
+  const durationUnit = (document.getElementById('durationUnit')||{}).value || 'minutes';
+  const unitMinutes = { minutes:1, hours:60, days:1440 }[durationUnit] || 1;
+  const durationMin = durationVal * unitMinutes;
   if (!prizeName){ showToast('የሽልማት ስም ያስፈልጋል'); return; }
   if (!entryFee || entryFee<=0){ showToast('ትክክለኛ የመግቢያ ክፍያ አስገባ'); return; }
-  if (!durationMin || durationMin<=0){ showToast('ትክክለኛ የቆይታ ጊዜ (ደቂቃ) አስገባ'); return; }
+  if (!durationVal || durationVal<=0){ showToast('ትክክለኛ የቆይታ ጊዜ አስገባ'); return; }
   const round = {
     id: uid(), prizeName, prizeDesc, prizeImage: state.pendingImageData || null,
     entryFee, durationMinutes: durationMin,
