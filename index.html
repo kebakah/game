@@ -327,7 +327,7 @@ function copyNumber(){
   if (navigator.clipboard) navigator.clipboard.writeText(TELEBIRR_NUMBER).then(()=>showToast('ቁጥሩ ተቀድቷል'));
   else showToast(TELEBIRR_NUMBER);
 }
-function getOpenRound(){ return state.rounds.find(r=>r.status==='open') || null; }
+function getOpenRounds(){ return state.rounds.filter(r=>r.status==='open').sort((a,b)=>a.endAt-b.endAt); }
 function entriesForRound(id){ return state.entries.filter(e=>e.roundId===id); }
 function statusLabel(s){
   return { pending_payment:'በክፍያ ላይ', submitted:'በማጣራት ላይ', confirmed:'ተረጋግጧል', rejected:'አልተረጋገጠም', winner:'🏆 አሸናፊ' }[s] || s;
@@ -410,42 +410,44 @@ function renderTabbar(active){
 
 /* ============ SCREEN: HOME ============ */
 function renderHome(){
-  const round = getOpenRound();
-  const remain = round ? round.endAt - Date.now() : 0;
-  const isOpen = round && remain > 0;
-  const urgent = isOpen && remain < 60000;
+  const rounds = getOpenRounds();
   return `
   ${renderTopbar()}
   <div class="round-wrap">
-    ${round ? `
-    <div class="prize-card">
-      <div class="prize-media">
-        <img src="${prizeImg(round)}" alt="">
-        <div class="prize-ribbon">🏆 የዙር ሽልማት</div>
-      </div>
-      <div class="prize-body">
-        <div class="prize-name">${escapeHtml(round.prizeName)}</div>
-        ${round.prizeDesc ? `<div class="prize-desc">${escapeHtml(round.prizeDesc)}</div>` : ''}
-        <div class="stat-row">
-          <div class="stat-box timer ${urgent?'urgent':''}" id="timerBox">
-            <div class="stat-val" id="countdownVal">${isOpen ? fmtCountdown(remain) : '00:00'}</div>
-            <div class="stat-lbl">ቀሪ ጊዜ</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val">${entriesForRound(round.id).length}</div>
-            <div class="stat-lbl">ተሳታፊዎች</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val">${fmt(round.entryFee)}</div>
-            <div class="stat-lbl">ብር (መግቢያ)</div>
-          </div>
-        </div>
-        <button class="btn-primary" ${isOpen?'':'disabled'} onclick="startJoin()">${isOpen ? '🎲 ተሳተፍ' : 'ዙሩ ተጠናቋል'}</button>
-        ${isOpen ? `<div class="hint-chip">🔁 በተደጋጋሚ ጊዜ መጫወት ትችላለህ</div>` : ''}
-      </div>
-    </div>` : `
+    ${rounds.length===0 ? `
     <div class="no-round"><span class="big-ic">🎲</span><span class="serif">ምንም ክፍት ዙር የለም</span>የሚቀጥለው ዙር በቅርቡ ይጀምራል፣ ትንሽ ቆይተህ ተመልከት።</div>
-    `}
+    ` : rounds.map(round=>{
+      const remain = round.endAt - Date.now();
+      const isOpen = remain > 0;
+      const urgent = isOpen && remain < 60000;
+      return `
+      <div class="prize-card" style="margin-bottom:16px;">
+        <div class="prize-media">
+          <img src="${prizeImg(round)}" alt="">
+          <div class="prize-ribbon">🏆 የዙር ሽልማት</div>
+        </div>
+        <div class="prize-body">
+          <div class="prize-name">${escapeHtml(round.prizeName)}</div>
+          ${round.prizeDesc ? `<div class="prize-desc">${escapeHtml(round.prizeDesc)}</div>` : ''}
+          <div class="stat-row">
+            <div class="stat-box timer ${urgent?'urgent':''}" id="timerBox-${round.id}">
+              <div class="stat-val" id="countdownVal-${round.id}">${isOpen ? fmtCountdown(remain) : '00:00'}</div>
+              <div class="stat-lbl">ቀሪ ጊዜ</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">${entriesForRound(round.id).length}</div>
+              <div class="stat-lbl">ተሳታፊዎች</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">${fmt(round.entryFee)}</div>
+              <div class="stat-lbl">ብር (መግቢያ)</div>
+            </div>
+          </div>
+          <button class="btn-primary" ${isOpen?'':'disabled'} onclick="startJoin('${round.id}')">${isOpen ? '🎲 ተሳተፍ' : 'ዙሩ ተጠናቋል'}</button>
+          ${isOpen ? `<div class="hint-chip">🔁 በተደጋጋሚ ጊዜ መጫወት ትችላለህ</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
   </div>
   <div class="rules-box">
     <div class="rt">🎮 የጨዋታው ደንብ</div>
@@ -458,32 +460,37 @@ function renderHome(){
 }
 function tickTimer(){
   if (state.screen !== 'home') return;
-  const round = getOpenRound();
-  if (!round) return;
-  const el = document.getElementById('countdownVal');
-  const box = document.getElementById('timerBox');
-  if (!el) return;
-  const remain = round.endAt - Date.now();
-  if (remain <= 0){ render(); return; }
-  el.textContent = fmtCountdown(remain);
-  if (box) box.classList.toggle('urgent', remain < 60000);
+  const rounds = getOpenRounds();
+  if (rounds.length===0) return;
+  let anyExpired = false;
+  rounds.forEach(round=>{
+    const el = document.getElementById('countdownVal-'+round.id);
+    if (!el) return;
+    const box = document.getElementById('timerBox-'+round.id);
+    const remain = round.endAt - Date.now();
+    if (remain <= 0){ anyExpired = true; return; }
+    el.textContent = fmtCountdown(remain);
+    if (box) box.classList.toggle('urgent', remain < 60000);
+  });
+  if (anyExpired) render();
 }
 setInterval(tickTimer, 1000);
 
 /* ============ JOIN FLOW ============ */
-function startJoin(){
-  const round = getOpenRound();
-  if (!round || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+function startJoin(roundId){
+  const round = state.rounds.find(r=>r.id===roundId);
+  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  state.joiningRoundId = roundId;
   go('join');
 }
 function renderJoin(){
-  const round = getOpenRound();
-  if (!round){ go('home'); return ''; }
+  const round = state.rounds.find(r=>r.id===state.joiningRoundId);
+  if (!round || round.status!=='open'){ go('home'); return ''; }
   return `
   <div class="back-btn"><button onclick="go('home')">&rarr; ወደ ኋላ</button></div>
   <div class="form-wrap">
     <h2 class="serif" style="margin:10px 0 6px;">ተሳተፍ</h2>
-    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።</p>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">ለ &laquo;<strong>${escapeHtml(round.prizeName)}</strong>&raquo; ትሳተፋለህ። ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።</p>
     <div class="field">
       <label>ሙሉ ስም</label>
       <input type="text" id="joinName" placeholder="ለምሳሌ፡ አበበ ከበደ" value="${escapeAttr(state.player.name||'')}">
@@ -507,8 +514,8 @@ function submitJoin(){
   const guess = parseGuessInput(val('joinGuess'));
   if (!name || !phone){ showToast('ስም እና ስልክ ቁጥር ያስፈልጋል'); return; }
   if (guess === null){ showToast('ከ1.00 እስከ 1000.00 ትክክለኛ ቁጥር አስገባ'); return; }
-  const round = getOpenRound();
-  if (!round || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  const round = state.rounds.find(r=>r.id===state.joiningRoundId);
+  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
   savePlayer(name, phone);
   const entry = { id: uid().toUpperCase(), roundId: round.id, name, phone, guess, receipt:null, note:'', status:'pending_payment', createdAt: Date.now() };
   state.entries.unshift(entry);
@@ -685,48 +692,75 @@ function renderAdmin(){
   return `
   <div class="section-title">አስተዳደር</div>
   <div class="admin-subnav">
-    <button class="${sub==='round'?'active':''}" onclick="state._adminTab='round'; render();">የአሁኑ ዙር</button>
+    <button class="${sub==='round'?'active':''}" onclick="state._adminTab='round'; render();">ንቁ ዙሮች</button>
     <button class="${sub==='history'?'active':''}" onclick="state._adminTab='history'; render();">ታሪክ</button>
   </div>
   ${sub==='round' ? renderAdminRound() : renderAdminHistory()}
   ${renderTabbar('')}`;
 }
 function renderAdminRound(){
-  const round = getOpenRound();
-  if (!round){
-    const img = state.pendingImageData;
+  const rounds = getOpenRounds();
+  return `
+  <div class="form-wrap" style="padding:4px 18px 16px;">
+    <button class="btn-primary" onclick="state.pendingImageData=null; go('admin-round-new')">➕ አዲስ ዙር ጀምር</button>
+  </div>
+  ${rounds.length===0 ? `<div class="empty">በአሁኑ ጊዜ ክፍት ዙር የለም። ከላይ ያለውን ተጭነህ ዙር ጀምር።</div>` :
+  rounds.map(round=>{
+    const remain = round.endAt - Date.now();
+    const entries = entriesForRound(round.id);
     return `
-    <div class="form-wrap" style="padding-top:4px;">
-      <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 16px;">ምንም ክፍት ዙር የለም። አዲስ ዙር ጀምር።</p>
-      <div class="field">
-        <label>የሽልማት ምስል</label>
-        <div class="img-picker">
-          <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23FBF0DA%22/></svg>'}">
-          <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">ምስል ምረጥ</button>
-          <input type="file" id="prizeImgFile" accept="image/*" style="display:none" onchange="onPrizeImageChosen(event)">
+    <div class="admin-entry" style="cursor:pointer;" onclick="state.managingRoundId='${round.id}'; go('admin-round-detail')">
+      <div class="ae-top">
+        <div>
+          <div class="ae-name">${escapeHtml(round.prizeName)}</div>
+          <div class="ae-phone">${entries.length} ተሳታፊዎች &middot; ${fmt(round.entryFee)} ብር</div>
         </div>
+        <span class="status-badge status-confirmed">${remain>0?fmtCountdown(remain):'00:00'}</span>
       </div>
-      <div class="field"><label>የሽልማት ስም</label><input type="text" id="prizeName" placeholder="ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ"></div>
-      <div class="field"><label>የሽልማት መግለጫ (አማራጭ)</label><textarea id="prizeDesc" placeholder="አጭር መግለጫ"></textarea></div>
-      <div class="field"><label>የመግቢያ ክፍያ (ብር)</label><input type="number" id="entryFee" placeholder="ለምሳሌ፡ 50"></div>
-      <div class="field">
-        <label>የዙር ቆይታ</label>
-        <div style="display:flex; gap:8px;">
-          <input type="number" id="durationVal" placeholder="ለምሳሌ፡ 2" style="flex:1;">
-          <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:#fff;">
-            <option value="minutes">ደቂቃ</option>
-            <option value="hours">ሰዓት</option>
-            <option value="days" selected>ቀን</option>
-          </select>
-        </div>
+    </div>`;
+  }).join('')}`;
+}
+function renderAdminRoundNew(){
+  if (!state.isAdmin){ go('home'); return ''; }
+  const img = state.pendingImageData;
+  return `
+  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ወደ ኋላ</button></div>
+  <div class="form-wrap" style="padding-top:14px;">
+    <h2 class="serif" style="margin:0 0 16px;">አዲስ ዙር ጀምር</h2>
+    <div class="field">
+      <label>የሽልማት ምስል</label>
+      <div class="img-picker">
+        <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23FBF0DA%22/></svg>'}">
+        <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">ምስል ምረጥ</button>
+        <input type="file" id="prizeImgFile" accept="image/*" style="display:none" onchange="onPrizeImageChosen(event)">
       </div>
     </div>
-    <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">ዙር ጀምር</button></div>`;
-  }
+    <div class="field"><label>የሽልማት ስም</label><input type="text" id="prizeName" placeholder="ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ"></div>
+    <div class="field"><label>የሽልማት መግለጫ (አማራጭ)</label><textarea id="prizeDesc" placeholder="አጭር መግለጫ"></textarea></div>
+    <div class="field"><label>የመግቢያ ክፍያ (ብር)</label><input type="number" id="entryFee" placeholder="ለምሳሌ፡ 50"></div>
+    <div class="field">
+      <label>የዙር ቆይታ</label>
+      <div style="display:flex; gap:8px;">
+        <input type="number" id="durationVal" placeholder="ለምሳሌ፡ 2" style="flex:1;">
+        <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:#fff;">
+          <option value="minutes">ደቂቃ</option>
+          <option value="hours">ሰዓት</option>
+          <option value="days" selected>ቀን</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">ዙር ጀምር</button></div>`;
+}
+function renderAdminRoundDetail(){
+  if (!state.isAdmin){ go('home'); return ''; }
+  const round = state.rounds.find(r=>r.id===state.managingRoundId);
+  if (!round){ state._adminTab='round'; go('admin'); return ''; }
   const remain = round.endAt - Date.now();
   const entries = entriesForRound(round.id);
   return `
-  <div class="round-wrap">
+  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ወደ ኋላ</button></div>
+  <div class="round-wrap" style="padding-top:10px;">
     <div class="prize-card">
       <div class="prize-media">
         <img src="${prizeImg(round)}" alt="">
@@ -738,7 +772,7 @@ function renderAdminRound(){
           <div class="stat-box"><div class="stat-val">${entries.length}</div><div class="stat-lbl">ተሳታፊዎች</div></div>
           <div class="stat-box"><div class="stat-val">${entries.filter(e=>e.status==='confirmed').length}</div><div class="stat-lbl">የተረጋገጡ</div></div>
         </div>
-        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600;" onclick="closeRoundAndAnnounce()">ዙር ዝጋና አሸናፊ አውጅ</button>
+        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600;" onclick="closeRoundAndAnnounce('${round.id}')">ዙር ዝጋና አሸናፊ አውጅ</button>
       </div>
     </div>
   </div>
@@ -786,7 +820,8 @@ function createRound(){
   fsSaveRound(round);
   state.pendingImageData = null;
   showToast('ዙር ተጀምሯል');
-  render();
+  state._adminTab = 'round';
+  go('admin');
 }
 function setEntryStatus(id, status){
   const e = state.entries.find(x=>x.id===id);
@@ -796,8 +831,8 @@ function setEntryStatus(id, status){
   showToast(status==='confirmed' ? 'ተረጋግጧል' : 'ውድቅ ተደርጓል');
   render();
 }
-function closeRoundAndAnnounce(){
-  const round = getOpenRound();
+function closeRoundAndAnnounce(roundId){
+  const round = state.rounds.find(r=>r.id===roundId);
   if (!round) return;
   if (!confirm('ዙሩን ዘግተህ አሸናፊ ማወጅ ትፈልጋለህ?')) return;
   const confirmed = entriesForRound(round.id).filter(e=>e.status==='confirmed');
@@ -811,7 +846,8 @@ function closeRoundAndAnnounce(){
   fsSaveRound(round);
   if (winner){ winner.status = 'winner'; fsSaveEntry(winner); }
   showToast(winner ? `🏆 አሸናፊ፡ ${winner.name} (${fmtGuess(winner.guess)})` : 'ልዩ አሸናፊ አልተገኘም');
-  render();
+  state._adminTab = 'round';
+  go('admin');
 }
 function renderAdminHistory(){
   const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
@@ -823,10 +859,52 @@ function renderAdminHistory(){
     <div class="admin-entry">
       <div class="ae-top">
         <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ተሳታፊዎች &middot; ${fmt(r.entryFee)} ብር</div></div>
+        <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft); flex-shrink:0;">✎ አርትዕ</button>
       </div>
       ${winner ? `<div class="kv"><span>አሸናፊ</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${fmtGuess(winner.guess)}</b></div>` : `<div class="kv"><span>ውጤት</span><b>ልዩ አሸናፊ አልነበረም</b></div>`}
     </div>`;
   }).join('');
+}
+function editHistoryRound(id){ state.editingRoundId = id; go('admin-history-edit'); }
+function renderAdminHistoryEdit(){
+  if (!state.isAdmin){ go('home'); return ''; }
+  const round = state.rounds.find(r=>r.id===state.editingRoundId);
+  if (!round){ state._adminTab='history'; go('admin'); return ''; }
+  const candidates = entriesForRound(round.id).filter(e=>e.status==='confirmed' || e.status==='winner').sort((a,b)=>a.guess-b.guess);
+  const rowStyle = active => `display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1.5px solid ${active?'var(--teal)':'var(--line)'}; border-radius:12px; cursor:pointer; margin-bottom:8px; background:${active?'var(--teal-soft)':'#fff'};`;
+  return `
+  <div class="back-btn"><button onclick="state._adminTab='history'; go('admin')">&rarr; ታሪክ</button></div>
+  <div class="form-wrap" style="padding-top:4px;">
+    <h2 class="serif" style="margin:10px 0 6px;">${escapeHtml(round.prizeName)} &mdash; አሸናፊ አርትዕ</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">ስህተት ካለ ትክክለኛውን አሸናፊ ምረጥ ወይም ሙሉ በሙሉ አስወግድ። የተረጋገጡ ተሳታፊዎች ብቻ ይታያሉ።</p>
+    <label style="${rowStyle(!round.winnerEntryId)}" onclick="setHistoryWinner(null)">
+      <span style="display:flex; align-items:center; gap:10px;"><input type="radio" name="winnerPick" ${!round.winnerEntryId?'checked':''}><span>ማንም አላሸነፈም</span></span>
+    </label>
+    ${candidates.length===0 ? `<div class="empty" style="padding:24px 0;">የተረጋገጡ ተሳታፊዎች የሉም።</div>` :
+    candidates.map(e=>`
+    <label style="${rowStyle(round.winnerEntryId===e.id)}" onclick="setHistoryWinner('${e.id}')">
+      <span style="display:flex; align-items:center; gap:10px;"><input type="radio" name="winnerPick" ${round.winnerEntryId===e.id?'checked':''}><span>${escapeHtml(e.name)} &middot; ${escapeHtml(e.phone)}</span></span>
+      <b style="font-family:'Noto Serif Ethiopic',serif; color:var(--teal); font-variant-numeric:tabular-nums;">${fmtGuess(e.guess)}</b>
+    </label>`).join('')}
+  </div>`;
+}
+function setHistoryWinner(entryId){
+  const round = state.rounds.find(r=>r.id===state.editingRoundId);
+  if (!round) return;
+  const prevWinnerId = round.winnerEntryId || null;
+  if (prevWinnerId === entryId) return;
+  if (prevWinnerId){
+    const prev = state.entries.find(e=>e.id===prevWinnerId);
+    if (prev){ prev.status = 'confirmed'; fsSaveEntry(prev); }
+  }
+  round.winnerEntryId = entryId || null;
+  if (entryId){
+    const next = state.entries.find(e=>e.id===entryId);
+    if (next){ next.status = 'winner'; fsSaveEntry(next); }
+  }
+  fsSaveRound(round);
+  showToast('አሸናፊ ተስተካክሏል');
+  render();
 }
 
 /* ============ ROUTER ============ */
@@ -836,7 +914,8 @@ function render(){
   const map = {
     'home': renderHome, 'join': renderJoin, 'pay': renderPay, 'upload': renderUpload, 'status': renderStatus,
     'myentry': renderMyEntry, 'entry-detail': renderEntryDetail, 'winners': renderWinners,
-    'admin': renderAdmin,
+    'admin': renderAdmin, 'admin-round-new': renderAdminRoundNew, 'admin-round-detail': renderAdminRoundDetail,
+    'admin-history-edit': renderAdminHistoryEdit,
   };
   const fn = map[state.screen] || renderHome;
   app.innerHTML = fn();
