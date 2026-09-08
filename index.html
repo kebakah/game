@@ -275,6 +275,29 @@ function setupRealtimeSync(){
 }
 async function fsSaveRound(r){ try{ await db.collection('game_rounds').doc(r.id).set(r); } catch(e){ console.error(e); showToast('ዙር ማስቀመጥ አልተቻለም'); } }
 async function fsSaveEntry(e){ try{ await db.collection('game_entries').doc(e.id).set(e); } catch(e2){ console.error(e2); showToast('ተሳትፎ ማስቀመጥ አልተቻለም'); } }
+async function fsDeleteRound(id){
+  try {
+    const snap = await db.collection('game_entries').where('roundId','==',id).get();
+    const batch = db.batch();
+    snap.forEach(doc=>batch.delete(doc.ref));
+    batch.delete(db.collection('game_rounds').doc(id));
+    await batch.commit();
+  } catch(e){ console.error(e); showToast('ዙር መሰረዝ አልተቻለም'); }
+}
+async function fsResetAll(){
+  try {
+    const [roundsSnap, entriesSnap] = await Promise.all([
+      db.collection('game_rounds').get(),
+      db.collection('game_entries').get(),
+    ]);
+    const allRefs = [...roundsSnap.docs.map(d=>d.ref), ...entriesSnap.docs.map(d=>d.ref)];
+    for (let i=0;i<allRefs.length;i+=450){
+      const batch = db.batch();
+      allRefs.slice(i,i+450).forEach(ref=>batch.delete(ref));
+      await batch.commit();
+    }
+  } catch(e){ console.error(e); showToast('ዳታ ማጽዳት አልተቻለም'); }
+}
 
 /* ============ HELPERS ============ */
 function fmt(n){ return Number(n).toLocaleString('en-US'); }
@@ -851,7 +874,11 @@ function closeRoundAndAnnounce(roundId){
 }
 function renderAdminHistory(){
   const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
-  return closed.length===0 ? `<div class="empty">እስካሁን የተዘጋ ዙር የለም።</div>` :
+  return `
+  <div class="form-wrap" style="padding:4px 18px 6px;">
+    <button onclick="resetAllData()" style="width:100%; background:#fff; border:1.5px solid var(--red); color:var(--red); border-radius:12px; padding:12px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;">🗑️ ሁሉንም ዳታ አጽዳ &mdash; እንደ አዲስ ጀምር</button>
+  </div>
+  ${closed.length===0 ? `<div class="empty">እስካሁን የተዘጋ ዙር የለም።</div>` :
   closed.map(r=>{
     const winner = r.winnerEntryId ? state.entries.find(e=>e.id===r.winnerEntryId) : null;
     const total = entriesForRound(r.id).length;
@@ -859,13 +886,33 @@ function renderAdminHistory(){
     <div class="admin-entry">
       <div class="ae-top">
         <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ተሳታፊዎች &middot; ${fmt(r.entryFee)} ብር</div></div>
-        <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft); flex-shrink:0;">✎ አርትዕ</button>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft);">✎ አርትዕ</button>
+          <button onclick="deleteHistoryRound('${r.id}')" style="border:1px solid var(--red); background:#fff; border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--red);">🗑 ሰርዝ</button>
+        </div>
       </div>
       ${winner ? `<div class="kv"><span>አሸናፊ</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${fmtGuess(winner.guess)}</b></div>` : `<div class="kv"><span>ውጤት</span><b>ልዩ አሸናፊ አልነበረም</b></div>`}
     </div>`;
-  }).join('');
+  }).join('')}`;
 }
 function editHistoryRound(id){ state.editingRoundId = id; go('admin-history-edit'); }
+function deleteHistoryRound(id){
+  if (!confirm('ይህን ዙር እና ተያያዥ ተሳትፎዎችን ሙሉ በሙሉ መሰረዝ እርግጠኛ ኖት? ይህን መቀልበስ አይቻልም።')) return;
+  state.rounds = state.rounds.filter(r=>r.id!==id);
+  state.entries = state.entries.filter(e=>e.roundId!==id);
+  fsDeleteRound(id);
+  showToast('ዙር ተሰርዟል');
+  render();
+}
+function resetAllData(){
+  if (!confirm('ይህ ሁሉንም ዙሮች፣ ተሳትፎዎች እና የአሸናፊዎች ታሪክ ሙሉ በሙሉ ይሰርዛል &mdash; መተግበሪያው ልክ እንደ አዲስ ይጀምራል። ይህን መቀልበስ አይቻልም። እርግጠኛ ኖት?'.replace(/&mdash;/g,'—'))) return;
+  if (!confirm('የመጨረሻ ማረጋገጫ፡ በእርግጥ ሁሉንም ዳታ መሰረዝ ትፈልጋለህ?')) return;
+  state.rounds = [];
+  state.entries = [];
+  fsResetAll();
+  showToast('ሁሉም ዳታ ጸድቷል');
+  render();
+}
 function renderAdminHistoryEdit(){
   if (!state.isAdmin){ go('home'); return ''; }
   const round = state.rounds.find(r=>r.id===state.editingRoundId);
