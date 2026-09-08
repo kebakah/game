@@ -9,6 +9,7 @@
 <meta property="og:description" content="ከ1.00 እስከ 1000.00 ትንሹን ልዩ ቁጥር ገምተህ ሽልማት አሸንፍ! ኢርፎን፣ ስልክ፣ ቲቪ እና ሌሎችም።">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%AF</text></svg>">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-firestore-compat.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -295,6 +296,13 @@
 /* ============ CONFIG ============ */
 const ADMIN_PASSWORD = 'gebeya2024';
 const TELEBIRR_NUMBER = '914703628';
+// Add your Telegram @username(s) here (no @) to get auto-admin access when opening via the Telegram bot.
+const ADMIN_USERNAMES = [];
+
+/* ============ TELEGRAM (optional — works with or without it) ============ */
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
 
 /* ============ FIREBASE (shared project, dedicated game_ collections) ============ */
 const firebaseConfig = {
@@ -315,7 +323,7 @@ const state = {
   entries: [],
   player: JSON.parse(localStorage.getItem('game_player')||'null') || { name:'', phone:'' },
   myEntryIds: JSON.parse(localStorage.getItem('game_my_entries')||'[]'),
-  isAdmin: sessionStorage.getItem('isAdmin')==='1',
+  isAdmin: sessionStorage.getItem('isAdmin')==='1' || !!(tgUser && tgUser.username && ADMIN_USERNAMES.includes(tgUser.username)),
   currentEntryId: null,
   viewingEntryId: null,
   pendingImageData: null,
@@ -390,6 +398,10 @@ function fmtCountdown(ms){
   return h>0 ? `${p(h)}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
 }
 function maskPhone(p){ p = String(p||''); return p.length>=6 ? p.slice(0,4)+'***'+p.slice(-2) : p; }
+function tgFullName(){
+  if (!tgUser) return '';
+  return [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ').trim();
+}
 function parseGuessInput(str){
   if (str === '' || str === null || str === undefined) return null;
   const n = parseFloat(str);
@@ -584,7 +596,7 @@ function renderJoin(){
     <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">ለ &laquo;<strong>${escapeHtml(round.prizeName)}</strong>&raquo; ትሳተፋለህ። ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።</p>
     <div class="field">
       <label>ሙሉ ስም</label>
-      <input type="text" id="joinName" placeholder="ለምሳሌ፡ አበበ ከበደ" value="${escapeAttr(state.player.name||'')}">
+      <input type="text" id="joinName" placeholder="ለምሳሌ፡ አበበ ከበደ" value="${escapeAttr(state.player.name || tgFullName() || '')}">
     </div>
     <div class="field">
       <label>ስልክ ቁጥር</label>
