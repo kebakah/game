@@ -8,6 +8,7 @@
 <meta property="og:title" content="ትንሹ ቁጥር - ጨዋታ">
 <meta property="og:description" content="ከ1.00 እስከ 1000.00 ትንሹን ልዩ ቁጥር ገምተህ ሽልማት አሸንፍ! ኢርፎን፣ ስልክ፣ ቲቪ እና ሌሎችም።">
 <meta property="og:type" content="website">
+<meta name="theme-color" content="#0A1620">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%AF</text></svg>">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.min.js"></script>
@@ -16,24 +17,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Ethiopic:wght@500;600;700&family=Noto+Sans+Ethiopic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#FBF7F0;
-    --ink:#1F2A24;
-    --ink-soft:#54615A;
+    --cream:#0A1620;
+    --ink:#E9F2F8;
+    --ink-soft:#7E93A6;
+    --ink-dark:#241A06;
     --gold:#E8A93B;
     --gold-dark:#C98C22;
     --gold-grad:linear-gradient(135deg,#F5C77A,#E8A93B 55%,#C98C22);
-    --teal:#1B6B5A;
-    --teal-dark:#134F42;
-    --teal-grad:linear-gradient(135deg,#238C74,#1B6B5A 70%,#134F42);
-    --teal-soft:#E4F1EC;
-    --red:#C1523D;
-    --red-soft:#F7E7E2;
-    --amber-soft:#FBF0DA;
-    --line:#E4DCCB;
-    --card:#FFFFFF;
-    --shadow-sm:0 2px 8px rgba(31,42,36,.06);
-    --shadow-md:0 6px 18px rgba(31,42,36,.08);
-    --shadow-lg:0 12px 30px rgba(31,42,36,.12);
+    --teal:#22DD79;
+    --teal-dark:#0FAE59;
+    --teal-grad:linear-gradient(135deg,#5CF0A4,#22DD79 60%,#0FAE59);
+    --teal-soft:rgba(34,221,121,.14);
+    --red:#FF5D74;
+    --red-soft:rgba(255,93,116,.14);
+    --amber-soft:rgba(232,169,59,.14);
+    --line:#20323F;
+    --card:#122431;
+    --card-2:#1A2F3D;
+    --shadow-sm:0 2px 10px rgba(0,0,0,.35);
+    --shadow-md:0 10px 24px rgba(0,0,0,.45);
+    --shadow-lg:0 18px 44px rgba(0,0,0,.55);
     --content-w:520px;
     --content-w-lg:880px;
   }
@@ -42,9 +45,10 @@
   html{ scroll-behavior:smooth; }
   body{
     background:
-      radial-gradient(circle at 10% -8%, rgba(232,169,59,.18), transparent 40%),
-      radial-gradient(circle at 95% 6%, rgba(27,107,90,.14), transparent 45%),
-      radial-gradient(circle at 50% 100%, rgba(27,107,90,.08), transparent 50%),
+      radial-gradient(circle at 12% -6%, rgba(232,169,59,.16), transparent 42%),
+      radial-gradient(circle at 92% 8%, rgba(34,221,121,.15), transparent 46%),
+      radial-gradient(circle at 50% 105%, rgba(34,221,121,.09), transparent 55%),
+      radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1px) 0 0/24px 24px,
       var(--cream);
     background-attachment:fixed;
     color:var(--ink);
@@ -66,8 +70,8 @@
   .topbar{
     display:flex; align-items:center; justify-content:space-between; padding:18px 18px;
     position:sticky; top:0; z-index:40;
-    background:rgba(251,247,240,.82); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border-bottom:1px solid rgba(228,220,203,.7);
+    background:rgba(10,22,32,.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(32,50,63,.9);
   }
   .brand{ display:flex; flex-direction:column; }
   .brand-row{ display:flex; align-items:center; gap:9px; }
@@ -79,7 +83,7 @@
   .brand .name{ font-family:'Noto Serif Ethiopic',serif; font-weight:700; font-size:22px; letter-spacing:-0.01em; }
   .brand .sub{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; }
   .topbar-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-  .icon-round-btn{ background:#fff; border:1px solid var(--line); border-radius:50%; width:38px; height:38px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); box-shadow:var(--shadow-sm); transition:transform .12s ease, box-shadow .15s ease, color .15s ease; }
+  .icon-round-btn{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:38px; height:38px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); box-shadow:var(--shadow-sm); transition:transform .12s ease, box-shadow .15s ease, color .15s ease; }
   .icon-round-btn:hover{ color:var(--teal); box-shadow:var(--shadow-md); transform:translateY(-1px); }
   .icon-round-btn:active{ transform:scale(.92); }
   .icon-round-btn svg{ width:18px; height:18px; }
@@ -90,7 +94,7 @@
     background:var(--card); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-lg);
     animation:slideFadeIn .4s ease backwards; transition:transform .18s ease, box-shadow .18s ease;
   }
-  .prize-card:hover{ transform:translateY(-3px); box-shadow:0 16px 36px rgba(31,42,36,.15); }
+  .prize-card:hover{ transform:translateY(-3px); box-shadow:0 20px 46px rgba(0,0,0,.6), 0 0 0 1px rgba(232,169,59,.18); }
   .round-wrap .prize-card:nth-child(1){ animation-delay:.03s; }
   .round-wrap .prize-card:nth-child(2){ animation-delay:.08s; }
   .round-wrap .prize-card:nth-child(3){ animation-delay:.13s; }
@@ -98,9 +102,9 @@
   .prize-media{ position:relative; }
   .prize-card img{ width:100%; height:210px; object-fit:cover; display:block; background:var(--amber-soft); }
   .prize-ribbon{
-    position:absolute; top:12px; right:12px; background:var(--gold-grad); color:var(--ink);
+    position:absolute; top:12px; right:12px; background:var(--gold-grad); color:var(--ink-dark);
     font-size:11.5px; font-weight:700; padding:7px 13px; border-radius:20px;
-    box-shadow:0 4px 10px rgba(0,0,0,.18);
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
   }
   .prize-body{ padding:18px 18px 20px; }
   .prize-name{ font-family:'Noto Serif Ethiopic',serif; font-size:21px; font-weight:700; margin:0 0 6px; }
@@ -109,7 +113,7 @@
   .stat-box{ flex:1; background:var(--teal-soft); border-radius:14px; padding:11px 10px; text-align:center; transition:background .3s ease, box-shadow .3s ease; }
   .stat-box.timer{ background:var(--amber-soft); }
   .stat-box .stat-val{ font-family:'Inter','Noto Serif Ethiopic',serif; font-size:19px; font-weight:800; color:var(--teal); font-variant-numeric:tabular-nums; letter-spacing:.01em; }
-  .stat-box.timer .stat-val{ color:var(--gold-dark); }
+  .stat-box.timer .stat-val{ color:var(--gold); }
   .stat-box .stat-lbl{ font-size:10.5px; color:var(--ink-soft); margin-top:3px; }
   .stat-box.timer.urgent{ background:var(--red-soft); animation:pulseUrgent 1s ease-in-out infinite; }
   .stat-box.timer.urgent .stat-val{ color:var(--red); }
@@ -123,17 +127,19 @@
   .progress-lbl{ font-size:11px; color:var(--ink-soft); margin-top:6px; display:flex; justify-content:space-between; }
 
   .btn-primary{
-    width:100%; background:var(--gold-grad); color:var(--ink); border:none; border-radius:13px;
+    width:100%; background:var(--gold-grad); background-size:200% 200%; color:var(--ink-dark); border:none; border-radius:13px;
     padding:15px; font-size:15.5px; font-weight:700; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;
-    box-shadow:0 8px 18px rgba(201,140,34,.32); transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    box-shadow:0 8px 22px rgba(232,169,59,.28); transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    animation:shimmerGold 5s ease-in-out infinite;
   }
-  .btn-primary:hover:not(:disabled){ filter:brightness(1.04); transform:translateY(-1px); box-shadow:0 10px 22px rgba(201,140,34,.4); }
-  .btn-primary:active:not(:disabled){ transform:scale(.98); box-shadow:0 4px 10px rgba(201,140,34,.28); }
+  @keyframes shimmerGold{ 0%,100%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } }
+  .btn-primary:hover:not(:disabled){ filter:brightness(1.08); transform:translateY(-1px); box-shadow:0 10px 26px rgba(232,169,59,.4); }
+  .btn-primary:active:not(:disabled){ transform:scale(.98); box-shadow:0 4px 12px rgba(232,169,59,.3); }
   .hint-chip{ text-align:center; font-size:12px; color:var(--ink-soft); margin-top:11px; }
-  .btn-secondary{ background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:15px; font-weight:600; cursor:pointer; flex:1; transition:transform .12s ease, border-color .15s ease; }
+  .btn-secondary{ background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:14px; font-size:15px; font-weight:600; cursor:pointer; flex:1; transition:transform .12s ease, border-color .15s ease; }
   .btn-secondary:hover{ border-color:var(--teal); transform:translateY(-1px); }
-  .btn-outline-teal{ background:#fff; border:1px solid var(--teal); color:var(--teal); }
-  .btn-danger{ background:#fff; border:1px solid var(--red); color:var(--red); transition:transform .12s ease, background .15s ease; }
+  .btn-outline-teal{ background:var(--card); border:1px solid var(--teal); color:var(--teal); }
+  .btn-danger{ background:var(--card); border:1px solid var(--red); color:var(--red); transition:transform .12s ease, background .15s ease; }
   .btn-danger:hover{ background:var(--red-soft); transform:translateY(-1px); }
   button{ font-family:'Noto Sans Ethiopic',sans-serif; }
   button:disabled{ opacity:.45; cursor:not-allowed; }
@@ -146,7 +152,7 @@
   .rules-box .rt{ font-weight:700; font-size:14px; color:var(--teal-dark); margin-bottom:12px; }
   .rule-item{ display:flex; align-items:flex-start; gap:10px; margin-bottom:11px; font-size:13px; line-height:1.6; color:var(--ink); }
   .rule-item:last-child{ margin-bottom:0; }
-  .rule-ic{ flex-shrink:0; width:28px; height:28px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 5px rgba(31,42,36,.08); }
+  .rule-ic{ flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,.3); }
 
   .section-title{ padding:22px 18px 8px; font-family:'Noto Serif Ethiopic',serif; font-size:17px; font-weight:700; }
 
@@ -162,15 +168,16 @@
     width:100%; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .field input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(27,107,90,.12); }
+  .field input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(34,221,121,.16); }
+  .field input[type=text], .field input[type=number], .field input[type=tel]{ background:var(--card-2); color:var(--ink); }
   textarea{
     width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-family:'Noto Sans Ethiopic',sans-serif;
-    font-size:14px; resize:vertical; min-height:70px; background:#fff; transition:border-color .15s ease, box-shadow .15s ease;
+    font-size:14px; resize:vertical; min-height:70px; background:var(--card-2); color:var(--ink); transition:border-color .15s ease, box-shadow .15s ease;
   }
-  textarea:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(27,107,90,.12); }
+  textarea:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(34,221,121,.16); }
   .fixed-bar{
     position:fixed; bottom:0; left:0; right:0; max-width:var(--content-w); margin:0 auto;
-    background:rgba(251,247,240,.9); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    background:rgba(10,22,32,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
     border-top:1px solid var(--line); padding:12px 18px 16px;
     display:flex; gap:10px;
   }
@@ -180,7 +187,7 @@
   .pay-summary{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:18px; }
   .pay-summary .row{ display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0; color:var(--ink-soft); }
   .pay-summary .row.total{ color:var(--ink); font-weight:700; font-size:15px; border-top:1px solid var(--line); margin-top:6px; padding-top:12px; }
-  .telebirr-card{ background:var(--teal-grad); color:#fff; border-radius:18px; padding:20px; margin-bottom:16px; box-shadow:0 10px 24px rgba(27,107,90,.28); }
+  .telebirr-card{ background:var(--teal-grad); color:var(--ink-dark); border-radius:18px; padding:20px; margin-bottom:16px; box-shadow:0 10px 28px rgba(15,174,89,.35); }
   .telebirr-card .tb-label{ font-size:12.5px; opacity:.9; margin-bottom:10px; font-weight:600; }
   .telebirr-number-row{ display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,.15); border-radius:11px; padding:12px 14px; margin-bottom:10px; }
   .telebirr-number{ font-family:'Inter','Noto Serif Ethiopic',serif; font-size:23px; font-weight:800; letter-spacing:0.02em; }
@@ -196,7 +203,7 @@
   .drop-zone.has-file{ border-color:var(--teal); }
   .drop-zone svg{ margin-bottom:8px; }
   .drop-zone .dz-text{ font-size:13.5px; color:var(--ink-soft); }
-  .receipt-preview{ width:100%; max-height:260px; object-fit:contain; border-radius:12px; margin-bottom:14px; background:#f4f4f4; }
+  .receipt-preview{ width:100%; max-height:260px; object-fit:contain; border-radius:12px; margin-bottom:14px; background:var(--card-2); }
 
   /* ---- entry / winners cards ---- */
   .entry-card{
@@ -206,16 +213,16 @@
   }
   .entry-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
   .entry-card:active{ transform:scale(.99); }
-  .entry-card.winner{ border-color:var(--gold); background:linear-gradient(135deg,#FFF7E8,var(--amber-soft)); box-shadow:0 6px 18px rgba(201,140,34,.2); }
+  .entry-card.winner{ border-color:var(--gold); background:linear-gradient(135deg,rgba(232,169,59,.22),rgba(232,169,59,.06)); box-shadow:0 8px 22px rgba(201,140,34,.25); }
   .entry-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
   .entry-prize{ font-weight:700; font-size:14.5px; }
   .entry-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; font-variant-numeric:tabular-nums; }
   .status-badge{ font-size:11.5px; font-weight:700; padding:4px 11px; border-radius:20px; white-space:nowrap; }
-  .status-pending_payment{ background:var(--amber-soft); color:var(--gold-dark); }
-  .status-submitted{ background:var(--amber-soft); color:var(--gold-dark); }
+  .status-pending_payment{ background:var(--amber-soft); color:var(--gold); }
+  .status-submitted{ background:var(--amber-soft); color:var(--gold); }
   .status-confirmed{ background:var(--teal-soft); color:var(--teal); }
   .status-rejected{ background:var(--red-soft); color:var(--red); }
-  .status-winner{ background:var(--gold-grad); color:var(--ink); }
+  .status-winner{ background:var(--gold-grad); color:var(--ink-dark); }
   .winner-banner{ text-align:center; padding:54px 30px 20px; }
   .winner-banner .big-ic{ font-size:52px; display:block; margin-bottom:8px; }
   .winner-banner .serif{ font-size:22px; margin:6px 0 8px; }
@@ -224,9 +231,9 @@
   .empty .serif{ font-size:19px; color:var(--ink); display:block; margin-bottom:6px; }
 
   .wcard{ display:flex; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); align-items:center; transition:background .15s ease; animation:slideFadeIn .35s ease backwards; }
-  .wcard:hover{ background:rgba(27,107,90,.04); }
+  .wcard:hover{ background:rgba(34,221,121,.06); }
   .wcard .wtrophy{ font-size:22px; flex-shrink:0; width:26px; text-align:center; }
-  .wcard img{ width:54px; height:54px; border-radius:12px; object-fit:cover; background:var(--amber-soft); box-shadow:0 3px 8px rgba(31,42,36,.1); }
+  .wcard img{ width:54px; height:54px; border-radius:12px; object-fit:cover; background:var(--amber-soft); box-shadow:0 3px 10px rgba(0,0,0,.35); }
   .wcard .wname{ font-weight:700; font-size:14px; }
   .wcard .wmeta{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
   .wcard .wguess{ font-family:'Inter','Noto Serif Ethiopic',serif; color:var(--teal); font-weight:800; font-size:15px; font-variant-numeric:tabular-nums; }
@@ -234,8 +241,8 @@
   /* ---- bottom tab nav ---- */
   .tabbar{
     position:fixed; bottom:0; left:0; right:0; max-width:var(--content-w); margin:0 auto;
-    background:rgba(255,255,255,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    border-top:1px solid var(--line); display:flex; box-shadow:0 -4px 14px rgba(31,42,36,.05);
+    background:rgba(10,22,32,.9); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line); display:flex; box-shadow:0 -6px 20px rgba(0,0,0,.4);
   }
   .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 8px; cursor:pointer; color:var(--ink-soft); font-size:11px; position:relative; transition:color .12s ease, transform .12s ease; }
   .tab:hover{ color:var(--teal); transform:translateY(-1px); }
@@ -245,12 +252,12 @@
 
   /* ---- admin ---- */
   .admin-subnav{ display:flex; gap:8px; padding:0 18px 12px; }
-  .admin-subnav button{ flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:#fff; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-soft); font-family:'Noto Sans Ethiopic',sans-serif; transition:border-color .12s ease; }
+  .admin-subnav button{ flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:var(--card); font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-soft); font-family:'Noto Sans Ethiopic',sans-serif; transition:border-color .12s ease; }
   .admin-subnav button:hover{ border-color:var(--teal); }
-  .admin-subnav button.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .admin-subnav button.active{ background:var(--gold-grad); color:var(--ink-dark); border-color:transparent; }
   .img-picker{ display:flex; gap:10px; align-items:center; }
   .img-picker img{ width:64px; height:64px; border-radius:10px; object-fit:cover; background:var(--amber-soft); }
-  .file-btn{ border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px 14px; font-size:13px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; transition:border-color .12s ease; }
+  .file-btn{ border:1px solid var(--line); background:var(--card-2); color:var(--ink); border-radius:10px; padding:10px 14px; font-size:13px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; transition:border-color .12s ease; }
   .file-btn:hover{ border-color:var(--teal); }
   .admin-entry{
     background:var(--card); border:1px solid var(--line); border-radius:14px; margin:0 18px 12px; padding:14px;
@@ -261,7 +268,7 @@
   .admin-entry .ae-name{ font-weight:700; font-size:14px; }
   .admin-entry .ae-phone{ font-size:12.5px; color:var(--ink-soft); }
   .admin-entry .ae-guess{ font-family:'Inter','Noto Serif Ethiopic',serif; font-weight:800; color:var(--teal); font-size:20px; margin:6px 0; font-variant-numeric:tabular-nums; }
-  .admin-entry img.receipt-thumb{ width:100%; max-height:220px; object-fit:contain; border-radius:10px; margin:8px 0; background:#f4f4f4; }
+  .admin-entry img.receipt-thumb{ width:100%; max-height:220px; object-fit:contain; border-radius:10px; margin:8px 0; background:var(--card-2); }
   .admin-actions{ display:flex; gap:8px; margin-top:10px; }
   .admin-actions button{ flex:1; border-radius:10px; padding:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; }
   .kv{ display:flex; justify-content:space-between; font-size:13.5px; padding:6px 0; color:var(--ink-soft); }
@@ -269,7 +276,7 @@
   .note-box{ background:var(--amber-soft); border-radius:10px; padding:12px 14px; font-size:13.5px; margin:12px 0; }
   .footer-note{ text-align:center; padding:26px 18px 10px; }
   .footer-note a{ color:var(--ink-soft); font-size:12px; text-decoration:underline; cursor:pointer; }
-  .toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:10px; font-size:13px; z-index:999; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--card-2); border:1px solid var(--line); color:var(--ink); padding:10px 18px; border-radius:10px; font-size:13px; z-index:999; opacity:0; transition:opacity .25s; pointer-events:none; box-shadow:var(--shadow-md); }
   .toast.show{ opacity:1; }
 
   /* ---- confetti ---- */
@@ -435,7 +442,7 @@ function entriesForRound(id){ return state.entries.filter(e=>e.roundId===id); }
 function statusLabel(s){
   return { pending_payment:'በክፍያ ላይ', submitted:'በማጣራት ላይ', confirmed:'ተረጋግጧል', rejected:'አልተረጋገጠም', winner:'🏆 አሸናፊ' }[s] || s;
 }
-function prizeImg(r){ return r.prizeImage || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="%23FBF0DA"/></svg>'; }
+function prizeImg(r){ return r.prizeImage || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231A2F3D%22/></svg>'; }
 
 /* ============ CONFETTI ============ */
 function launchConfetti(){
@@ -837,7 +844,7 @@ function renderAdminRoundNew(){
     <div class="field">
       <label>የሽልማት ምስል</label>
       <div class="img-picker">
-        <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23FBF0DA%22/></svg>'}">
+        <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%231A2F3D%22/></svg>'}">
         <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">ምስል ምረጥ</button>
         <input type="file" id="prizeImgFile" accept="image/*" style="display:none" onchange="onPrizeImageChosen(event)">
       </div>
@@ -849,7 +856,7 @@ function renderAdminRoundNew(){
       <label>የዙር ቆይታ</label>
       <div style="display:flex; gap:8px;">
         <input type="number" id="durationVal" placeholder="ለምሳሌ፡ 2" style="flex:1;">
-        <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:#fff;">
+        <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:var(--card-2); color:var(--ink);">
           <option value="minutes">ደቂቃ</option>
           <option value="hours">ሰዓት</option>
           <option value="days" selected>ቀን</option>
@@ -964,7 +971,7 @@ function renderAdminHistory(){
   const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
   return `
   <div class="form-wrap" style="padding:4px 18px 6px;">
-    <button onclick="resetAllData()" style="width:100%; background:#fff; border:1.5px solid var(--red); color:var(--red); border-radius:12px; padding:12px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;">🗑️ ሁሉንም ዳታ አጽዳ &mdash; እንደ አዲስ ጀምር</button>
+    <button onclick="resetAllData()" style="width:100%; background:var(--card); border:1.5px solid var(--red); color:var(--red); border-radius:12px; padding:12px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;">🗑️ ሁሉንም ዳታ አጽዳ &mdash; እንደ አዲስ ጀምር</button>
   </div>
   ${closed.length===0 ? `<div class="empty">እስካሁን የተዘጋ ዙር የለም።</div>` :
   closed.map(r=>{
@@ -975,8 +982,8 @@ function renderAdminHistory(){
       <div class="ae-top">
         <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ተሳታፊዎች &middot; ${fmt(r.entryFee)} ብር</div></div>
         <div style="display:flex; gap:6px; flex-shrink:0;">
-          <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft);">✎ አርትዕ</button>
-          <button onclick="deleteHistoryRound('${r.id}')" style="border:1px solid var(--red); background:#fff; border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--red);">🗑 ሰርዝ</button>
+          <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft);">✎ አርትዕ</button>
+          <button onclick="deleteHistoryRound('${r.id}')" style="border:1px solid var(--red); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--red);">🗑 ሰርዝ</button>
         </div>
       </div>
       ${winner ? `<div class="kv"><span>አሸናፊ</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${fmtGuess(winner.guess)}</b></div>` : `<div class="kv"><span>ውጤት</span><b>ልዩ አሸናፊ አልነበረም</b></div>`}
@@ -1006,7 +1013,7 @@ function renderAdminHistoryEdit(){
   const round = state.rounds.find(r=>r.id===state.editingRoundId);
   if (!round){ state._adminTab='history'; go('admin'); return ''; }
   const candidates = entriesForRound(round.id).filter(e=>e.status==='confirmed' || e.status==='winner').sort((a,b)=>a.guess-b.guess);
-  const rowStyle = active => `display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1.5px solid ${active?'var(--teal)':'var(--line)'}; border-radius:12px; cursor:pointer; margin-bottom:8px; background:${active?'var(--teal-soft)':'#fff'};`;
+  const rowStyle = active => `display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1.5px solid ${active?'var(--teal)':'var(--line)'}; border-radius:12px; cursor:pointer; margin-bottom:8px; background:${active?'var(--teal-soft)':'var(--card)'};`;
   return `
   <div class="back-btn"><button onclick="state._adminTab='history'; go('admin')">&rarr; ታሪክ</button></div>
   <div class="form-wrap" style="padding-top:4px;">
