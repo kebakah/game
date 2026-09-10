@@ -306,26 +306,10 @@ const TELEBIRR_NUMBER = '914703628';
 // Add your Telegram @username(s) here (no @) to get auto-admin access when opening via the Telegram bot.
 const ADMIN_USERNAMES = [];
 
-// Fill these in to get a Telegram message every time someone joins, pays, or wins.
-// TELEGRAM_BOT_TOKEN: from @BotFather when you created the bot.
-// TELEGRAM_ADMIN_CHAT_ID: message your bot once, then visit
-//   https://api.telegram.org/bot<token>/getUpdates in a browser and copy the "chat":{"id": ...} number.
-const TELEGRAM_BOT_TOKEN = '';
-const TELEGRAM_ADMIN_CHAT_ID = '';
-
 /* ============ TELEGRAM (optional — works with or without it) ============ */
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
 const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
-function tgSendMessage(chatId, text){
-  if (!TELEGRAM_BOT_TOKEN || !chatId) return;
-  fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  }).catch(e=>console.error('Telegram notify failed', e));
-}
-function notifyAdmin(text){ tgSendMessage(TELEGRAM_ADMIN_CHAT_ID, text); }
 
 /* ============ FIREBASE (shared project, dedicated game_ collections) ============ */
 const firebaseConfig = {
@@ -644,11 +628,10 @@ function submitJoin(){
   const round = state.rounds.find(r=>r.id===state.joiningRoundId);
   if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
   savePlayer(name, phone);
-  const entry = { id: uid().toUpperCase(), roundId: round.id, name, phone, guess, receipt:null, note:'', status:'pending_payment', tgUserId: tgUser ? tgUser.id : null, createdAt: Date.now() };
+  const entry = { id: uid().toUpperCase(), roundId: round.id, name, phone, guess, receipt:null, note:'', status:'pending_payment', createdAt: Date.now() };
   state.entries.unshift(entry);
   state.currentEntryId = entry.id;
   fsSaveEntry(entry);
-  notifyAdmin(`🎲 አዲስ ተሳትፎ\nሽልማት፡ ${round.prizeName}\nስም፡ ${name} (${phone})\nቁጥር፡ ${fmtGuess(guess)}\nተሳትፎ #${entry.id}`);
   addMyEntryLocal(entry.id);
   go('pay');
 }
@@ -721,8 +704,6 @@ function submitReceipt(){
   entry.status = 'submitted';
   entry.submittedAt = Date.now();
   fsSaveEntry(entry);
-  const round = state.rounds.find(r=>r.id===entry.roundId);
-  notifyAdmin(`🧾 ክፍያ ገብቷል፣ ማረጋገጫ ይጠብቃል\nሽልማት፡ ${round?round.prizeName:''}\nስም፡ ${entry.name} (${entry.phone})\nቁጥር፡ ${fmtGuess(entry.guess)}\nተሳትፎ #${entry.id}`);
   state.pendingImageData = null;
   go('status');
 }
@@ -983,16 +964,7 @@ function closeRoundAndAnnounce(roundId){
   round.closedAt = Date.now();
   round.winnerEntryId = winner ? winner.id : null;
   fsSaveRound(round);
-  if (winner){
-    winner.status = 'winner';
-    fsSaveEntry(winner);
-    notifyAdmin(`🏆 ዙር ተዘግቷል\nሽልማት፡ ${round.prizeName}\nአሸናፊ፡ ${winner.name} (${winner.phone}) — ${fmtGuess(winner.guess)}`);
-    if (winner.tgUserId){
-      tgSendMessage(winner.tgUserId, `🏆 እንኳን ደስ አለህ! "${round.prizeName}" ውስጥ በቁጥር ${fmtGuess(winner.guess)} አሸንፈሃል! ሽልማትህን ለመቀበል በቅርቡ እናገኝሃለን።`);
-    }
-  } else {
-    notifyAdmin(`ℹ️ ዙር ተዘግቷል\nሽልማት፡ ${round.prizeName}\nውጤት፡ ልዩ አሸናፊ አልተገኘም`);
-  }
+  if (winner){ winner.status = 'winner'; fsSaveEntry(winner); }
   showToast(winner ? `🏆 አሸናፊ፡ ${winner.name} (${fmtGuess(winner.guess)})` : 'ልዩ አሸናፊ አልተገኘም');
   state._adminTab = 'round';
   go('admin');
