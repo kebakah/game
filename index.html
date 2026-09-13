@@ -903,7 +903,19 @@ function renderAdminRoundDetail(){
         </div>
         <div class="progress-track"><div class="progress-fill" style="width:${progressPct}%;"></div></div>
         <div class="progress-lbl"><span>የተረጋገጠ ክፍያ</span><span>${confirmedCount}/${entries.length}</span></div>
-        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600; margin-top:16px;" onclick="closeRoundAndAnnounce('${round.id}')">ዙር ዝጋና አሸናፊ አውጅ</button>
+        <div class="field" style="margin:16px 0 0;">
+          <label>ጊዜ አራዝም</label>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="extendVal" placeholder="ለምሳሌ፡ 15" style="flex:1;">
+            <select id="extendUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:var(--card-2); color:var(--ink);">
+              <option value="minutes" selected>ደቂቃ</option>
+              <option value="hours">ሰዓት</option>
+              <option value="days">ቀን</option>
+            </select>
+            <button class="btn-secondary" style="flex:0 0 auto; padding:12px 16px;" onclick="extendRound('${round.id}')">➕ አራዝም</button>
+          </div>
+        </div>
+        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600; margin-top:12px;" onclick="closeRoundAndAnnounce('${round.id}')">ዙር ዝጋና አሸናፊ አውጅ</button>
       </div>
     </div>
   </div>
@@ -960,6 +972,19 @@ function setEntryStatus(id, status){
   e.status = status;
   fsSaveEntry(e);
   showToast(status==='confirmed' ? 'ተረጋግጧል' : 'ውድቅ ተደርጓል');
+  render();
+}
+function extendRound(roundId){
+  const round = state.rounds.find(r=>r.id===roundId);
+  if (!round) return;
+  const extendVal = parseFloat(val('extendVal'));
+  const extendUnit = (document.getElementById('extendUnit')||{}).value || 'minutes';
+  const unitMinutes = { minutes:1, hours:60, days:1440 }[extendUnit] || 1;
+  if (!extendVal || extendVal<=0){ showToast('ትክክለኛ ጊዜ አስገባ'); return; }
+  const base = round.endAt > Date.now() ? round.endAt : Date.now();
+  round.endAt = base + extendVal*unitMinutes*60000;
+  fsSaveRound(round);
+  showToast('ጊዜው ተራዝሟል');
   render();
 }
 function closeRoundAndAnnounce(roundId){
