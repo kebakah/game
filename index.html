@@ -80,7 +80,13 @@
     display:flex; align-items:center; justify-content:center; font-size:19px;
     box-shadow:0 5px 12px rgba(201,140,34,.4);
   }
-  .brand .name{ font-family:'Noto Serif Ethiopic',serif; font-weight:700; font-size:22px; letter-spacing:-0.01em; }
+  .brand .name{
+    font-family:'Noto Serif Ethiopic',serif; font-weight:700; font-size:22px; letter-spacing:-0.01em;
+    background:linear-gradient(90deg,#C98C22 0%,#F5C77A 25%,#FFF3D6 50%,#F5C77A 75%,#C98C22 100%);
+    background-size:250% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:nameShimmer 6s linear infinite;
+  }
+  @keyframes nameShimmer{ 0%{ background-position:0% 50%; } 100%{ background-position:-250% 50%; } }
   .brand .sub{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; }
   .topbar-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
   .icon-round-btn{ background:var(--card); border:1px solid var(--line); border-radius:50%; width:38px; height:38px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); box-shadow:var(--shadow-sm); transition:transform .12s ease, box-shadow .15s ease, color .15s ease; }
