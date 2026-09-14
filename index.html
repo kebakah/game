@@ -93,6 +93,11 @@
   .icon-round-btn:hover{ color:var(--teal); box-shadow:var(--shadow-md); transform:translateY(-1px); }
   .icon-round-btn:active{ transform:scale(.92); }
   .icon-round-btn svg{ width:18px; height:18px; }
+  .lang-select{
+    background:var(--card); border:1px solid var(--line); color:var(--ink-soft); border-radius:20px;
+    padding:8px 10px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:var(--shadow-sm);
+    font-family:'Noto Sans Ethiopic',sans-serif; -webkit-appearance:none; appearance:none;
+  }
 
   /* ---- prize / round card ---- */
   .round-wrap{ padding:8px 18px 8px; display:grid; grid-template-columns:1fr; gap:16px; }
@@ -316,6 +321,308 @@ const TELEBIRR_NUMBER = '914703628';
 // Add your Telegram @username(s) here (no @) to get auto-admin access when opening via the Telegram bot.
 const ADMIN_USERNAMES = [];
 
+/* ============ LANGUAGE ============ */
+const LANGS = [
+  { code:'am', label:'አማ', name:'አማርኛ' },
+  { code:'om', label:'OM', name:'Afaan Oromoo' },
+  { code:'ti', label:'ትግ', name:'ትግርኛ' },
+  { code:'en', label:'EN', name:'English' },
+];
+const T = {
+  am: {
+    brand_name:'ትንሹ ቁጥር', brand_sub:'ልዩ የሆነውን ትንሹን ቁጥር ገምት, አሸንፍ!',
+    tab_home:'ቤት', tab_myentry:'የኔ ተሳትፎ', tab_winners:'አሸናፊዎች',
+    no_round_title:'ምንም ክፍት ዙር የለም', no_round_sub:'የሚቀጥለው ዙር በቅርቡ ይጀምራል፣ ትንሽ ቆይተህ ተመልከት።',
+    prize_ribbon:'🏆 የዙር ሽልማት', stat_time_left:'🕒 ቀሪ ጊዜ', stat_participants:'👥 ተሳታፊዎች', stat_entry_fee:'💰 ብር (መግቢያ)', word_participants:'ተሳታፊዎች',
+    btn_play:'🎲 ተሳተፍ', round_closed:'ዙሩ ተጠናቋል', hint_replay:'🔁 በተደጋጋሚ ጊዜ መጫወት ትችላለህ',
+    rules_title:'🎮 የጨዋታው ደንብ',
+    rule1:'ከ1.00 እስከ 1000.00 ውስጥ ሁለት አሃዝ ያለው ቁጥር ምረጥ (ለምሳሌ፡ 12.45)።',
+    rule2:'ማንም ሌላ ሰው ካልመረጠው (ልዩ ከሆነ) ቁጥሮች ውስጥ ትንሹን የመረጠው ያሸንፋል። ሁለት ሰዎች ተመሳሳይ ቁጥር ከመረጡ ያ ቁጥር ውድቅ ይሆናል።',
+    rule3:'በተደጋጋሚ ጊዜ መጫወት ትችላለህ! እያንዳንዱ ሙከራ የራሱ ክፍያ ይፈልጋል።',
+    rule4:'ተጫዋቹ ክፍያውን ካልፈጸመ ወይም ካልተረጋገጠ ቁጥሩ ውድቅ ይደረጋል።',
+    admin_login_link:'የAስተዳዳሪ መግቢያ',
+    back:'ወደ ኋላ', join_title:'ተሳተፍ', join_intro:'ለ «{prize}» ትሳተፋለህ። ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።',
+    label_fullname:'ሙሉ ስም', placeholder_name:'ለምሳሌ፡ አበበ ከበደ', label_phone:'ስልክ ቁጥር',
+    label_pick_number:'ቁጥርህን ምረጥ (1.00 - 1000.00)', placeholder_eg1245:'ለምሳሌ፡ 12.45', hint_pick:'ምክር፡ ልዩ ሊሆን የሚችል ትንሽ ቁጥር ምረጥ። ሁለት አሃዝ ድረስ (ለምሳሌ 3.14) መጠቀም ትችላለህ።',
+    btn_continue_payment:'ቀጥል ወደ ክፍያ',
+    toast_need_name_phone:'ስም እና ስልክ ቁጥር ያስፈልጋል', toast_valid_number:'ከ1.00 እስከ 1000.00 ትክክለኛ ቁጥር አስገባ', toast_round_closed:'ዙሩ ተጠናቋል',
+    pay_title:'ክፍያ ፈጽም',
+    note_manual_payment:'ይህ ድረ-ገጽ በራሱ ገንዘብ አይቀበልም። ገንዘቡን በቴሌብር በስልክህ ራስህ ትልካለህ፣ ከዚያ ማረጋገጫውን (ደረሰኝ) እዚሁ ትሰቅላለህ።',
+    amount_label:'የሚላከው መጠን', currency:'ብር',
+    telebirr_number_label:'📲 የቴሌብር ስልክ ቁጥር (ወደዚህ ላክ)', copy:'ቅዳ',
+    step1:'የቴሌብር መተግበሪያውን ክፈት — ወይም ያለ መተግበሪያ *127# ደውል', step2:'«Send Money» / «ገንዘብ ላክ» የሚለውን ምረጥ',
+    step3:'ስልክ ቁጥር {num} አስገባ', step4:'መጠን {fee} ብር አስገባና ላክ (ይህ የገመትከው ቁጥር {guess} አይደለም — የመግቢያ ክፍያው ብቻ ነው)',
+    step5:'ከላክህ በኋላ የሚመጣውን የቴሌብር ማረጋገጫ ገጽ ስክሪንሾት አድርግ',
+    ref_note:'ማጣቀሻ (አማራጭ፣ ለራሳችን መዝገብ ብቻ)፡ ተሳትፎ #{id}',
+    note_final:'ገንዘቡን ከላክህ እና ስክሪንሾቱን ካነሳህ በኋላ ከታች ያለውን ቁልፍ ተጫን።',
+    btn_paid:'✅ ከፍያለሁ — ደረሰኝ ልስቀል',
+    upload_title:'የክፍያ ደረሰኝ ስቀል', upload_sub:'የቴሌብር ማረጋገጫህን ፎቶ ወይም ቅጽበታዊ ገጽ እይታ አስገባ፣ ክፍያህን እናረጋግጥልሃለን።',
+    dz_change:'ሌላ ምስል ለመምረጥ ንካ', dz_choose:'ምስል ለመምረጥ ንካ', note_placeholder:'ተጨማሪ መረጃ ካለ (አማራጭ)', btn_submit_receipt:'ደረሰኝ አስገባ',
+    status_title:'ደረሰኝ ገብቷል!', status_sub:'ክፍያህ በቅርቡ ይረጋገጣል። ውጤቱን ለማየት ማንኛውም ጊዜ ወደ "የኔ ተሳትፎ" ትር ተመለስ።', btn_back_home:'ወደ ቤት ተመለስ',
+    myentry_title:'የኔ ተሳትፎ', empty_no_entries_title:'እስካሁን አልተሳተፍክም', empty_no_entries_sub:'ወደ ቤት ሄደህ የአሁኑን ዙር ተቀላቀል።',
+    entry_number_label:'ቁጥርህ፡', default_round_word:'ዙር',
+    status_pending_payment:'በክፍያ ላይ', status_submitted:'በማጣራት ላይ', status_confirmed:'ተረጋግጧል', status_rejected:'አልተረጋገጠም', status_winner:'🏆 አሸናፊ',
+    winner_congrats_title:'እንኳን ደስ አለህ! አሸንፈሃል',
+    winner_congrats_body:'ቁጥርህ {guess} ልዩ እና ትንሹ ነበር። ሽልማትህን ({prize}) ለመቀበል በ {phone} በኩል ወይም በተመዘገበው ስልክ ቁጥርህ በኩል እንገናኝሃለን።',
+    entry_hash:'ተሳትፎ #{id}', kv_prize:'ሽልማት', kv_number:'ቁጥርህ', kv_name:'ስም',
+    note_pending_incomplete:'ክፍያ ገና አልተጠናቀቀም። ቀጥል ወደ ክፍያ ገጽ ሂድ።', note_rejected:'ክፍያህ ሊረጋገጥ አልቻለም። እባክህ ደረሰኝህን መልሰህ አረጋግጥ ወይም ድጋፍ አግኝ።',
+    btn_continue_pay:'ወደ ክፍያ ቀጥል',
+    winners_title:'ያለፉ አሸናፊዎች', empty_no_winners_title:'እስካሁን አሸናፊ የለም', empty_no_winners_sub:'የመጀመሪያው ዙር ሲጠናቀቅ አሸናፊዎች እዚህ ይታያሉ።', no_unique_winner:'ልዩ አሸናፊ አልነበረም',
+    admin_title:'አስተዳደር', admin_tab_active_rounds:'ንቁ ዙሮች', admin_tab_history:'ታሪክ',
+    btn_new_round:'➕ አዲስ ዙር ጀምር', no_open_round_admin:'በአሁኑ ጊዜ ክፍት ዙር የለም። ከላይ ያለውን ተጭነህ ዙር ጀምር።',
+    new_round_title:'አዲስ ዙር ጀምር', label_prize_image:'የሽልማት ምስል', btn_choose_image:'ምስል ምረጥ',
+    label_prize_name:'የሽልማት ስም', placeholder_prize_name:'ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ',
+    label_prize_desc:'የሽልማት መግለጫ (አማራጭ)', placeholder_short_desc:'አጭር መግለጫ',
+    label_entry_fee:'የመግቢያ ክፍያ (ብር)', placeholder_eg50:'ለምሳሌ፡ 50',
+    label_duration:'የዙር ቆይታ', placeholder_eg2:'ለምሳሌ፡ 2',
+    unit_minutes:'ደቂቃ', unit_hours:'ሰዓት', unit_days:'ቀን', btn_start_round:'ዙር ጀምር',
+    label_confirmed:'✅ የተረጋገጡ', progress_confirmed_payment:'የተረጋገጠ ክፍያ',
+    label_extend_time:'ጊዜ አራዝም', placeholder_eg15:'ለምሳሌ፡ 15', btn_extend:'➕ አራዝም',
+    btn_close_round:'ዙር ዝጋና አሸናፊ አውጅ', section_participants:'ተሳታፊዎች', empty_no_participants:'እስካሁን ተሳታፊ የለም።',
+    receipt_not_uploaded:'ደረሰኝ ገና አልገባም', btn_reject:'አትቀበል', btn_confirm:'አረጋግጥ',
+    toast_prize_name_required:'የሽልማት ስም ያስፈልጋል', toast_valid_fee:'ትክክለኛ የመግቢያ ክፍያ አስገባ', toast_valid_duration:'ትክክለኛ የቆይታ ጊዜ አስገባ',
+    toast_round_started:'ዙር ተጀምሯል', toast_confirmed:'ተረጋግጧል', toast_rejected:'ውድቅ ተደርጓል',
+    toast_valid_time:'ትክክለኛ ጊዜ አስገባ', toast_extended:'ጊዜው ተራዝሟል',
+    confirm_close_round:'ዙሩን ዘግተህ አሸናፊ ማወጅ ትፈልጋለህ?', toast_winner_announced:'🏆 አሸናፊ፡ {name} ({guess})', toast_no_unique_winner:'ልዩ አሸናፊ አልተገኘም',
+    btn_clear_all_data:'🗑️ ሁሉንም ዳታ አጽዳ — እንደ አዲስ ጀምር', empty_no_closed_rounds:'እስካሁን የተዘጋ ዙር የለም።',
+    btn_edit:'✎ አርትዕ', btn_delete:'🗑 ሰርዝ', kv_winner:'አሸናፊ', kv_result:'ውጤት',
+    confirm_delete_round:'ይህን ዙር እና ተያያዥ ተሳትፎዎችን ሙሉ በሙሉ መሰረዝ እርግጠኛ ኖት? ይህን መቀልበስ አይቻልም።', toast_round_deleted:'ዙር ተሰርዟል',
+    confirm_reset_all:'ይህ ሁሉንም ዙሮች፣ ተሳትፎዎች እና የአሸናፊዎች ታሪክ ሙሉ በሙሉ ይሰርዛል — መተግበሪያው ልክ እንደ አዲስ ይጀምራል። ይህን መቀልበስ አይቻልም። እርግጠኛ ኖት?',
+    confirm_final:'የመጨረሻ ማረጋገጫ፡ በእርግጥ ሁሉንም ዳታ መሰረዝ ትፈልጋለህ?', toast_all_data_cleared:'ሁሉም ዳታ ጸድቷል',
+    edit_winner_title:'{prize} — አሸናፊ አርትዕ',
+    edit_winner_sub:'ስህተት ካለ ትክክለኛውን አሸናፊ ምረጥ ወይም ሙሉ በሙሉ አስወግድ። የተረጋገጡ ተሳታፊዎች ብቻ ይታያሉ።',
+    no_one_won:'ማንም አላሸነፈም', empty_no_confirmed_participants:'የተረጋገጡ ተሳታፊዎች የሉም።', toast_winner_updated:'አሸናፊ ተስተካክሏል',
+    prompt_admin_password:'የAስተዳዳሪ የይለፍ ቃል፡', toast_admin_unlocked:'የAስተዳዳሪ መዳረሻ ተከፍቷል', toast_wrong_password:'የተሳሳተ የይለፍ ቃል',
+    copy_number_toast:'ቁጥሩ ተቀድቷል', loading:'በመጫን ላይ…',
+    error_load_rounds:'ዙሮችን መጫን አልተቻለም', error_load_entries:'ተሳታፊዎችን መጫን አልተቻለም',
+    error_save_round:'ዙር ማስቀመጥ አልተቻለም', error_save_entry:'ተሳትፎ ማስቀመጥ አልተቻለም',
+    error_delete_round:'ዙር መሰረዝ አልተቻለም', error_clear_data:'ዳታ ማጽዳት አልተቻለም',
+    day_one:'ቀን', day_many:'ቀናት',
+  },
+  en: {
+    brand_name:'The Smallest Number', brand_sub:'Guess the smallest unique number, win!',
+    tab_home:'Home', tab_myentry:'My Entries', tab_winners:'Winners',
+    no_round_title:'No open round', no_round_sub:'The next round starts soon — check back shortly.',
+    prize_ribbon:'🏆 Round Prize', stat_time_left:'🕒 Time Left', stat_participants:'👥 Participants', stat_entry_fee:'💰 ETB (Entry)', word_participants:'participants',
+    btn_play:'🎲 Play', round_closed:'Round closed', hint_replay:'🔁 You can play multiple times',
+    rules_title:'🎮 Game Rules',
+    rule1:'Pick a number with two decimals between 1.00 and 1000.00 (e.g. 12.45).',
+    rule2:'Whoever picks the smallest number that no one else picked (unique) wins. If two people pick the same number, it is disqualified.',
+    rule3:'You can play multiple times! Each attempt needs its own payment.',
+    rule4:'If a player doesn’t pay, or the payment isn’t confirmed, their number is disqualified.',
+    admin_login_link:'Admin Login',
+    back:'Back', join_title:'Join', join_intro:'You’re joining «{prize}». Enter your name, phone number, and your chosen number.',
+    label_fullname:'Full Name', placeholder_name:'e.g. Abebe Kebede', label_phone:'Phone Number',
+    label_pick_number:'Pick Your Number (1.00 - 1000.00)', placeholder_eg1245:'e.g. 12.45', hint_pick:'Tip: pick a small number likely to be unique. You can use up to two decimals (e.g. 3.14).',
+    btn_continue_payment:'Continue to Payment',
+    toast_need_name_phone:'Name and phone number are required', toast_valid_number:'Enter a valid number between 1.00 and 1000.00', toast_round_closed:'Round closed',
+    pay_title:'Make Payment',
+    note_manual_payment:'This site doesn’t accept payment directly. You send the money yourself via Telebirr, then upload the confirmation (receipt) here.',
+    amount_label:'Amount to Send', currency:'ETB',
+    telebirr_number_label:'📲 Telebirr Phone Number (send here)', copy:'Copy',
+    step1:'Open the Telebirr app — or dial *127# without the app', step2:'Choose “Send Money”',
+    step3:'Enter phone number {num}', step4:'Enter amount {fee} ETB and send (this is NOT your guessed number {guess} — it’s only the entry fee)',
+    step5:'After sending, take a screenshot of the Telebirr confirmation screen',
+    ref_note:'Reference (optional, for our records only): Entry #{id}',
+    note_final:'After sending the money and taking the screenshot, tap the button below.',
+    btn_paid:'✅ I’ve Paid — Upload Receipt',
+    upload_title:'Upload Payment Receipt', upload_sub:'Add a photo or screenshot of your Telebirr confirmation, and we’ll verify your payment.',
+    dz_change:'Tap to choose a different image', dz_choose:'Tap to choose an image', note_placeholder:'Additional info, if any (optional)', btn_submit_receipt:'Submit Receipt',
+    status_title:'Receipt Submitted!', status_sub:'Your payment will be verified soon. Check the "My Entries" tab anytime to see the result.', btn_back_home:'Back to Home',
+    myentry_title:'My Entries', empty_no_entries_title:'You haven’t joined yet', empty_no_entries_sub:'Go home and join the current round.',
+    entry_number_label:'Your number:', default_round_word:'Round',
+    status_pending_payment:'Payment Pending', status_submitted:'Under Review', status_confirmed:'Confirmed', status_rejected:'Not Verified', status_winner:'🏆 Winner',
+    winner_congrats_title:'Congratulations! You Won',
+    winner_congrats_body:'Your number {guess} was unique and the smallest. We’ll reach you via {phone} or your registered phone number to hand over your prize ({prize}).',
+    entry_hash:'Entry #{id}', kv_prize:'Prize', kv_number:'Your Number', kv_name:'Name',
+    note_pending_incomplete:'Payment not completed yet. Continue to the payment page.', note_rejected:'Your payment couldn’t be verified. Please recheck your receipt or contact support.',
+    btn_continue_pay:'Continue to Payment',
+    winners_title:'Past Winners', empty_no_winners_title:'No winners yet', empty_no_winners_sub:'Winners will appear here once the first round ends.', no_unique_winner:'No unique winner',
+    admin_title:'Admin', admin_tab_active_rounds:'Active Rounds', admin_tab_history:'History',
+    btn_new_round:'➕ Start New Round', no_open_round_admin:'No open round right now. Tap above to start one.',
+    new_round_title:'Start New Round', label_prize_image:'Prize Image', btn_choose_image:'Choose Image',
+    label_prize_name:'Prize Name', placeholder_prize_name:'e.g. Earphones / Phone / TV',
+    label_prize_desc:'Prize Description (optional)', placeholder_short_desc:'Short description',
+    label_entry_fee:'Entry Fee (ETB)', placeholder_eg50:'e.g. 50',
+    label_duration:'Round Duration', placeholder_eg2:'e.g. 2',
+    unit_minutes:'Minutes', unit_hours:'Hours', unit_days:'Days', btn_start_round:'Start Round',
+    label_confirmed:'✅ Confirmed', progress_confirmed_payment:'Confirmed Payments',
+    label_extend_time:'Extend Time', placeholder_eg15:'e.g. 15', btn_extend:'➕ Extend',
+    btn_close_round:'Close Round & Announce Winner', section_participants:'Participants', empty_no_participants:'No participants yet.',
+    receipt_not_uploaded:'Receipt not uploaded yet', btn_reject:'Reject', btn_confirm:'Confirm',
+    toast_prize_name_required:'Prize name is required', toast_valid_fee:'Enter a valid entry fee', toast_valid_duration:'Enter a valid duration',
+    toast_round_started:'Round started', toast_confirmed:'Confirmed', toast_rejected:'Rejected',
+    toast_valid_time:'Enter a valid time', toast_extended:'Time extended',
+    confirm_close_round:'Close the round and announce the winner?', toast_winner_announced:'🏆 Winner: {name} ({guess})', toast_no_unique_winner:'No unique winner found',
+    btn_clear_all_data:'🗑️ Clear All Data — Start Fresh', empty_no_closed_rounds:'No closed rounds yet.',
+    btn_edit:'✎ Edit', btn_delete:'🗑 Delete', kv_winner:'Winner', kv_result:'Result',
+    confirm_delete_round:'Permanently delete this round and its entries? This cannot be undone.', toast_round_deleted:'Round deleted',
+    confirm_reset_all:'This permanently deletes all rounds, entries, and winner history — the app will start fresh. This cannot be undone. Are you sure?',
+    confirm_final:'Final confirmation: do you really want to delete all data?', toast_all_data_cleared:'All data cleared',
+    edit_winner_title:'{prize} — Edit Winner',
+    edit_winner_sub:'If there was a mistake, pick the correct winner or remove it entirely. Only confirmed participants are shown.',
+    no_one_won:'No one won', empty_no_confirmed_participants:'No confirmed participants.', toast_winner_updated:'Winner updated',
+    prompt_admin_password:'Admin password:', toast_admin_unlocked:'Admin access unlocked', toast_wrong_password:'Wrong password',
+    copy_number_toast:'Number copied', loading:'Loading…',
+    error_load_rounds:'Couldn’t load rounds', error_load_entries:'Couldn’t load participants',
+    error_save_round:'Couldn’t save round', error_save_entry:'Couldn’t save entry',
+    error_delete_round:'Couldn’t delete round', error_clear_data:'Couldn’t clear data',
+    day_one:'day', day_many:'days',
+  },
+  om: {
+    brand_name:'Lakkoofsa Xiqqaa', brand_sub:'Lakkoofsa xiqqaa kan addaa ta’e tilmaami, mo’i!',
+    tab_home:'Mana', tab_myentry:'Galmee Koo', tab_winners:'Injifattoota',
+    no_round_title:'Marsaan banaa hin jiru', no_round_sub:'Marsaan itti aanu dhiyootti jalqaba, xinnoo turtee ilaali.',
+    prize_ribbon:'🏆 Badhaasa Marsaa', stat_time_left:'🕒 Yeroo Hafe', stat_participants:'👥 Hirmaattota', stat_entry_fee:'💰 Qarshii (Galmee)', word_participants:'hirmaattota',
+    btn_play:'🎲 Hirmaadhu', round_closed:'Marsaan xumurameera', hint_replay:'🔁 Yeroo hedduu taphachuu ni dandeessa',
+    rules_title:'🎮 Seera Taphichaa',
+    rule1:'Lakkoofsa qarqara lamaa qabu 1.00 hanga 1000.00 keessaa filadhu (fkn: 12.45).',
+    rule2:'Namni lakkoofsa xiqqaa kan namni biraa hin filatin (adda) filate ni mo’a. Yoo namoonni lama lakkoofsa wal fakkaatu filatan, lakkoofsi sun ni haqama.',
+    rule3:'Yeroo hedduu taphachuu ni dandeessa! Yaalii tokkoon tokkoon kaffaltii mataa isaa barbaada.',
+    rule4:'Taphataan kaffaltii hin raawwanne yookaan hin mirkaneeffamne, lakkoofsi isaa ni haqama.',
+    admin_login_link:'Seensa Admin',
+    back:'Duubatti', join_title:'Hirmaadhu', join_intro:'«{prize}» irratti hirmaachaa jirta. Maqaa, lakkoofsa bilbilaa fi lakkoofsa filatte galchi.',
+    label_fullname:'Maqaa Guutuu', placeholder_name:'fkn: Abebe Kebede', label_phone:'Lakkoofsa Bilbilaa',
+    label_pick_number:'Lakkoofsa Kee Filadhu (1.00 - 1000.00)', placeholder_eg1245:'fkn: 12.45', hint_pick:'Yaada: lakkoofsa xiqqaa kan adda ta’uu danda’u filadhu. Hanga qarqara lamaatti (fkn 3.14) fayyadamuu ni dandeessa.',
+    btn_continue_payment:'Itti Fufi gara Kaffaltii',
+    toast_need_name_phone:'Maqaa fi lakkoofsi bilbilaa barbaachisa', toast_valid_number:'Lakkoofsa sirrii 1.00 hanga 1000.00 galchi', toast_round_closed:'Marsaan xumurameera',
+    pay_title:'Kaffaltii Raawwadhu',
+    note_manual_payment:'Marsariitiin kun ofumaan maallaqa hin fudhatu. Maallaqa Telebirr-iin ofumaakeetiin ergita, ergasii ragaa (nagaheessaa) asitti ol fe’ita.',
+    amount_label:'Hanga Ergamu', currency:'Qarshii',
+    telebirr_number_label:'📲 Lakkoofsa Bilbilaa Telebirr (Asitti Ergi)', copy:'Waraabi',
+    step1:'Appii Telebirr baniif — yookaan malee appii *127# bilbili', step2:'«Send Money» filadhu',
+    step3:'Lakkoofsa bilbilaa {num} galchi', step4:'Hanga {fee} Qarshii galchiitii ergi (kun lakkoofsa ati filatte {guess} miti — kaffaltii galmee qofa)',
+    step5:'Erga ergitee booda, fuula mirkaneessaa Telebirr fudhu (screenshot)',
+    ref_note:'Wabii (filannoo, galmee keenyaaf qofa): Galmee #{id}',
+    note_final:'Erga maallaqa ergitee fi suuraa (screenshot) fudhattee booda, qabduu gadii tuqi.',
+    btn_paid:'✅ Kaffaleera — Ragaa Ol Kaa’i',
+    upload_title:'Ragaa Kaffaltii Ol Kaa’i', upload_sub:'Suura yookaan screenshot mirkaneessaa Telebirr kee galchi, kaffaltii kee ni mirkaneessina.',
+    dz_change:'Suura biraa filachuuf tuqi', dz_choose:'Suura filachuuf tuqi', note_placeholder:'Odeeffannoo dabalataa yoo jiraate (filannoo)', btn_submit_receipt:'Ragaa Galchi',
+    status_title:'Ragaan Galeera!', status_sub:'Kaffaltiin kee dhiyootti ni mirkanaa’a. Bu’aa ilaaluuf yeroo kamiyyuu gara "Galmee Koo" deebi’i.', btn_back_home:'Gara Mana Deebi’i',
+    myentry_title:'Galmee Koo', empty_no_entries_title:'Ammaan tana hin hirmaanne', empty_no_entries_sub:'Gara mana deemtee marsaa ammaa hirmaadhu.',
+    entry_number_label:'Lakkoofsa kee:', default_round_word:'Marsaa',
+    status_pending_payment:'Kaffaltiin Eegamaa Jira', status_submitted:'Sakatta’amaa Jira', status_confirmed:'Mirkanaa’eera', status_rejected:'Hin Mirkanoofne', status_winner:'🏆 Injifataa',
+    winner_congrats_title:'Baga Gammadde! Mo’atteerta',
+    winner_congrats_body:'Lakkoofsi kee {guess} adda fi xiqqaa ture. Badhaasa kee ({prize}) fudhachuuf {phone} ykn lakkoofsa bilbilaa galmeeffame keetiin si qunnamna.',
+    entry_hash:'Galmee #{id}', kv_prize:'Badhaasa', kv_number:'Lakkoofsa Kee', kv_name:'Maqaa',
+    note_pending_incomplete:'Kaffaltiin hin xumuramne. Gara fuula kaffaltii itti fufi.', note_rejected:'Kaffaltiin kee mirkanaa’uu hin dandeenye. Maaloo ragaa kee irra deebitee ilaali ykn deeggarsa argadhu.',
+    btn_continue_pay:'Gara Kaffaltii Itti Fufi',
+    winners_title:'Injifattoota Darban', empty_no_winners_title:'Ammaan tana injifataan hin jiru', empty_no_winners_sub:'Marsaan jalqabaa yeroo xumuramu injifattoonni asitti mul’atu.', no_unique_winner:'Injifataan adda hin jiru',
+    admin_title:'Bulchiinsa', admin_tab_active_rounds:'Marsaalee Ho’aa', admin_tab_history:'Seenaa',
+    btn_new_round:'➕ Marsaa Haaraa Jalqabi', no_open_round_admin:'Yeroo ammaa marsaan banaa hin jiru. Kan gubbaa tuqiitii marsaa jalqabi.',
+    new_round_title:'Marsaa Haaraa Jalqabi', label_prize_image:'Suura Badhaasaa', btn_choose_image:'Suura Filadhu',
+    label_prize_name:'Maqaa Badhaasaa', placeholder_prize_name:'fkn: Ear phone / Bilbila / TV',
+    label_prize_desc:'Ibsa Badhaasaa (filannoo)', placeholder_short_desc:'Ibsa gabaabaa',
+    label_entry_fee:'Kaffaltii Galmee (Qarshii)', placeholder_eg50:'fkn: 50',
+    label_duration:'Turtii Marsaa', placeholder_eg2:'fkn: 2',
+    unit_minutes:'Daqiiqaa', unit_hours:'Sa’aatii', unit_days:'Guyyaa', btn_start_round:'Marsaa Jalqabi',
+    label_confirmed:'✅ Mirkanaa’an', progress_confirmed_payment:'Kaffaltii Mirkanaa’e',
+    label_extend_time:'Yeroo Dheeressi', placeholder_eg15:'fkn: 15', btn_extend:'➕ Dheeressi',
+    btn_close_round:'Marsaa Cufii Injifataa Labsi', section_participants:'Hirmaattota', empty_no_participants:'Ammaan tana hirmaataan hin jiru.',
+    receipt_not_uploaded:'Ragaan ammaa hin galchamne', btn_reject:'Hin Fudhatin', btn_confirm:'Mirkaneessi',
+    toast_prize_name_required:'Maqaan badhaasaa barbaachisa', toast_valid_fee:'Kaffaltii galmee sirrii galchi', toast_valid_duration:'Turtii sirrii galchi',
+    toast_round_started:'Marsaan jalqabame', toast_confirmed:'Mirkanaa’eera', toast_rejected:'Diigameera',
+    toast_valid_time:'Yeroo sirrii galchi', toast_extended:'Yeroon dheerateera',
+    confirm_close_round:'Marsaa cufii injifataa labsuu barbaaddaa?', toast_winner_announced:'🏆 Injifataa: {name} ({guess})', toast_no_unique_winner:'Injifataan adda hin argamne',
+    btn_clear_all_data:'🗑️ Deetaa Hunda Haqi — Haaraa Jalqabi', empty_no_closed_rounds:'Ammaan tana marsaan cufame hin jiru.',
+    btn_edit:'✎ Gulaali', btn_delete:'🗑 Haqi', kv_winner:'Injifataa', kv_result:'Bu’aa',
+    confirm_delete_round:'Marsaa kana fi galmeewwan walqabatan guutummaatti haquu keessa mirkaneeffattaa? Kun deebi’ee hin danda’amu.', toast_round_deleted:'Marsaan haqameera',
+    confirm_reset_all:'Kun marsaalee, galmeewwanii fi seenaa injifattootaa hunda haquun, appiin akka haaraatti jalqaba. Kun deebi’ee hin danda’amu. Mirkaneeffattaa?',
+    confirm_final:'Mirkaneessa dhumaa: dhugumaan deetaa hunda haquu barbaaddaa?', toast_all_data_cleared:'Deetaan hundi haqameera',
+    edit_winner_title:'{prize} — Injifataa Gulaali',
+    edit_winner_sub:'Dogoggorri yoo jiraate, injifataa sirrii filadhu yookaan guutummaatti balleessi. Hirmaattota mirkanaa’an qofatu mul’ata.',
+    no_one_won:'Namni tokko iyyuu hin injifanne', empty_no_confirmed_participants:'Hirmaattonni mirkanaa’an hin jiran.', toast_winner_updated:'Injifataan haaromfameera',
+    prompt_admin_password:'Jecha Iccitii Admin:', toast_admin_unlocked:'Mirgi Admin banameera', toast_wrong_password:'Jechi iccitii dogoggora',
+    copy_number_toast:'Lakkoofsi garagalfameera', loading:'Fe’amaa jira…',
+    error_load_rounds:'Marsaalee fe’uu hin dandeenye', error_load_entries:'Hirmaattota fe’uu hin dandeenye',
+    error_save_round:'Marsaa olkaa’uu hin dandeenye', error_save_entry:'Galmee olkaa’uu hin dandeenye',
+    error_delete_round:'Marsaa haquu hin dandeenye', error_clear_data:'Deetaa haquu hin dandeenye',
+    day_one:'guyyaa', day_many:'guyyaa',
+  },
+  ti: {
+    brand_name:'ንእሽቶ ቁጽሪ', brand_sub:'እቲ ፍሉይ ንእሽቶ ቁጽሪ ግመት፣ ተዓወት!',
+    tab_home:'ገዛ', tab_myentry:'ተሳትፎይ', tab_winners:'ተዓወቲ',
+    no_round_title:'ክፉት ዙርያ የለን', no_round_sub:'ቀጻሊ ዙርያ ድሕሪ ቅሩብ ጊዜ ክጅምር እዩ፣ ትንሽ ጸኒሕካ ተመለስ።',
+    prize_ribbon:'🏆 ናይ ዙርያ ሽልማት', stat_time_left:'🕒 ተሪፉ ግዜ', stat_participants:'👥 ተሳተፍቲ', stat_entry_fee:'💰 ብር (መእተዊ)', word_participants:'ተሳተፍቲ',
+    btn_play:'🎲 ተሳተፍ', round_closed:'ዙርያ ተዛዚሙ', hint_replay:'🔁 ብዙ ሳዕ ክትጻወት ትኽእል ኢኻ',
+    rules_title:'🎮 ሕግታት ጸወታ',
+    rule1:'ካብ 1.00 ክሳብ 1000.00 ዘሎ ክልተ ኣሃዝ ዘለዎ ቁጽሪ ምረጽ (ንኣብነት፡ 12.45)።',
+    rule2:'ካልኦት ሰባት ዘይመረጽዎ (ፍሉይ) ቁጽሪ ዝመረጸ ሰብ፣ እቲ ዝነኣሰ እንተኾይኑ ይዕወት። ክልተ ሰባት ተመሳሳሊ ቁጽሪ እንተመሪጾም እቲ ቁጽሪ ይስረዝ።',
+    rule3:'ብተደጋጋሚ ክትጻወት ትኽእል ኢኻ! ነፍሲ ወከፍ ፈተነ ናይ ገዛእ ርእሱ ክፍሊት የድልዮ።',
+    rule4:'እቲ ተጻዋታይ ክፍሊት እንተዘይፈጺሙ ወይ እንተዘይተረጋጊጹ፣ ቁጽሩ ይስረዝ።',
+    admin_login_link:'መእተዊ ኣመሓዳሪ',
+    back:'ንድሕሪት', join_title:'ተሳተፍ', join_intro:'ን«{prize}» ትሳተፍ ኣለኻ። ስምካ፣ ቁጽሪ ተለፎንካን ዝመረጽካዮ ቁጽርን ኣእቱ።',
+    label_fullname:'ምሉእ ስም', placeholder_name:'ንኣብነት፡ ኣበበ ከበደ', label_phone:'ቁጽሪ ተለፎን',
+    label_pick_number:'ቁጽርኻ ምረጽ (1.00 - 1000.00)', placeholder_eg1245:'ንኣብነት፡ 12.45', hint_pick:'ምኽሪ፡ ፍሉይ ክኸውን ዝኽእል ንእሽቶ ቁጽሪ ምረጽ። ክሳብ ክልተ ኣሃዝ (ንኣብነት 3.14) ክትጥቀም ትኽእል ኢኻ።',
+    btn_continue_payment:'ንቕድሚት ናብ ክፍሊት',
+    toast_need_name_phone:'ስምን ቁጽሪ ተለፎንን የድሊ', toast_valid_number:'ካብ 1.00 ክሳብ 1000.00 ዘሎ ቅኑዕ ቁጽሪ ኣእቱ', toast_round_closed:'ዙርያ ተዛዚሙ',
+    pay_title:'ክፍሊት ፈጽም',
+    note_manual_payment:'እዚ ዌብሳይት እዚ ባዕሉ ገንዘብ ኣይቅበልን። ገንዘብ ብቴሌብር ባዕልካ ትልእኮ፣ ደሓር ከኣ ማረጋገጺ (ቅብሊት) ኣብዚ ተስቅሎ።',
+    amount_label:'ዝልኣኽ መጠን', currency:'ብር',
+    telebirr_number_label:'📲 ቁጽሪ ተለፎን ቴሌብር (ናብዚ ስደድ)', copy:'ቅዳሕ',
+    step1:'ናይ ቴሌብር ኣፕሊኬሽን ክፈት — ወይ ብዘይ ኣፕ *127# ደውል', step2:'«Send Money» ዝብል ምረጽ',
+    step3:'ቁጽሪ ተለፎን {num} ኣእቱ', step4:'መጠን {fee} ብር ኣእቱን ስደድን (እዚ እቲ ዝገመትካዮ ቁጽሪ {guess} ኣይኮነን — ናይ መእተዊ ክፍሊት ጥራይ እዩ)',
+    step5:'ድሕሪ ምስዳድካ ንዝመጽእ ናይ ቴሌብር ምርግጋጺ ገጽ ስክሪንሾት ግበር',
+    ref_note:'ጽውጽዋይ (ኣማራጺ፣ ንመዝገብና ጥራይ)፡ ተሳትፎ #{id}',
+    note_final:'ገንዘብ ድሕሪ ምልኣኽካን ስክሪንሾት ድሕሪ ምውሳድካን ነቲ ኣብ ታሕቲ ዘሎ መልጎም ጠውቕ።',
+    btn_paid:'✅ ከፊለ — ቅብሊት ክስቅል',
+    upload_title:'ቅብሊት ክፍሊት ስቀል', upload_sub:'ስእሊ ወይ ስክሪንሾት ናይ ቴሌብር ምርግጋጽካ ኣእቱ፣ ክፍሊትካ ከነረጋግጸልካ ኢና።',
+    dz_change:'ካልእ ስእሊ ንምምራጽ ጠውቕ', dz_choose:'ስእሊ ንምምራጽ ጠውቕ', note_placeholder:'ተወሳኺ ሓበሬታ እንተሎ (ኣማራጺ)', btn_submit_receipt:'ቅብሊት ኣእቱ',
+    status_title:'ቅብሊት ኣትዩ!', status_sub:'ክፍሊትካ ኣብ ቀረባ ግዜ ክረጋገጽ እዩ። ውጽኢት ንምርኣይ ኩሉ ግዜ ናብ "ተሳትፎይ" ተመለስ።', btn_back_home:'ናብ ገዛ ተመለስ',
+    myentry_title:'ተሳትፎይ', empty_no_entries_title:'ክሳብ ሕጂ ኣይተሳተፍካን', empty_no_entries_sub:'ናብ ገዛ ኬድካ ነቲ ህሉው ዙርያ ተጸንበር።',
+    entry_number_label:'ቁጽርኻ፡', default_round_word:'ዙርያ',
+    status_pending_payment:'ኣብ ክፍሊት', status_submitted:'ኣብ መጽናዕቲ', status_confirmed:'ተረጋጊጹ', status_rejected:'ኣይተረጋገጸን', status_winner:'🏆 ዓወት',
+    winner_congrats_title:'እንቋዕ ሓጎሰካ! ተዓዊትካ',
+    winner_congrats_body:'ቁጽርኻ {guess} ፍሉይን ዝነኣሰን ነበረ። ንሽልማትካ ({prize}) ንምቕባል ብ{phone} ወይ ብዝተመዝገበ ቁጽሪ ተለፎንካ ክንረኽበካ ኢና።',
+    entry_hash:'ተሳትፎ #{id}', kv_prize:'ሽልማት', kv_number:'ቁጽርኻ', kv_name:'ስም',
+    note_pending_incomplete:'ክፍሊት ገና ኣይተዛዘመን። ናብ ገጽ ክፍሊት ቀጽል።', note_rejected:'ክፍሊትካ ክረጋገጽ ኣይከኣለን። በጃኻ ቅብሊትካ ደጊምካ ኣረጋግጽ ወይ ደገፍ ርኸብ።',
+    btn_continue_pay:'ናብ ክፍሊት ቀጽል',
+    winners_title:'ዝሓለፉ ተዓወቲ', empty_no_winners_title:'ክሳብ ሕጂ ተዓዋቲ የለን', empty_no_winners_sub:'ቀዳማይ ዙርያ ምስ ተዛዘመ ተዓወቲ ኣብዚ ክርእዩ እዮም።', no_unique_winner:'ፍሉይ ተዓዋቲ ኣይነበረን',
+    admin_title:'ምምሕዳር', admin_tab_active_rounds:'ንጡፋት ዙርያታት', admin_tab_history:'ታሪኽ',
+    btn_new_round:'➕ ሓድሽ ዙርያ ጀምር', no_open_round_admin:'ሕጂ ክፉት ዙርያ የለን። ነቲ ኣብ ላዕሊ ዘሎ ጠውቕካ ዙርያ ጀምር።',
+    new_round_title:'ሓድሽ ዙርያ ጀምር', label_prize_image:'ስእሊ ሽልማት', btn_choose_image:'ስእሊ ምረጽ',
+    label_prize_name:'ስም ሽልማት', placeholder_prize_name:'ንኣብነት፡ ኢርፎን/ተለፎን/ቲቪ',
+    label_prize_desc:'መግለጺ ሽልማት (ኣማራጺ)', placeholder_short_desc:'ሓጺር መግለጺ',
+    label_entry_fee:'ክፍሊት መእተዊ (ብር)', placeholder_eg50:'ንኣብነት፡ 50',
+    label_duration:'ንውሓት ዙርያ', placeholder_eg2:'ንኣብነት፡ 2',
+    unit_minutes:'ደቒቕ', unit_hours:'ሰዓት', unit_days:'መዓልቲ', btn_start_round:'ዙርያ ጀምር',
+    label_confirmed:'✅ ዝተረጋገጹ', progress_confirmed_payment:'ዝተረጋገጸ ክፍሊት',
+    label_extend_time:'ግዜ ኣናውሕ', placeholder_eg15:'ንኣብነት፡ 15', btn_extend:'➕ ኣናውሕ',
+    btn_close_round:'ዙርያ ዕጾን ተዓዋቲ ኣውጅን', section_participants:'ተሳተፍቲ', empty_no_participants:'ክሳብ ሕጂ ተሳታፋይ የለን።',
+    receipt_not_uploaded:'ቅብሊት ገና ኣይኣተወን', btn_reject:'ኣይትቕበል', btn_confirm:'ኣረጋግጽ',
+    toast_prize_name_required:'ስም ሽልማት የድሊ', toast_valid_fee:'ቅኑዕ ክፍሊት መእተዊ ኣእቱ', toast_valid_duration:'ቅኑዕ ንውሓት ግዜ ኣእቱ',
+    toast_round_started:'ዙርያ ጀሚሩ', toast_confirmed:'ተረጋጊጹ', toast_rejected:'ተነጺጉ',
+    toast_valid_time:'ቅኑዕ ግዜ ኣእቱ', toast_extended:'ግዜ ወሲኹ',
+    confirm_close_round:'ዙርያ ዓጽካ ተዓዋቲ ከተውጽእ ደሊኻ ዲኻ?', toast_winner_announced:'🏆 ተዓዋቲ፡ {name} ({guess})', toast_no_unique_winner:'ፍሉይ ተዓዋቲ ኣይተረኽበን',
+    btn_clear_all_data:'🗑️ ኩሉ ዳታ ደምስስ — ከም ሓድሽ ጀምር', empty_no_closed_rounds:'ክሳብ ሕጂ ዝተዓጽወ ዙርያ የለን።',
+    btn_edit:'✎ ኣርትዕ', btn_delete:'🗑 ደምስስ', kv_winner:'ተዓዋቲ', kv_result:'ውጽኢት',
+    confirm_delete_round:'ነዚ ዙርያን ዝተኣሳሰሩ ተሳትፎታትን ብምሉእ ክትድምስሶም ርግጸኛ ዲኻ? እዚ ክምለስ ኣይክእልን።', toast_round_deleted:'ዙርያ ደምሲሱ',
+    confirm_reset_all:'እዚ ኩሎም ዙርያታት፣ ተሳትፎታትን ታሪኽ ተዓወትትን ብምሉእ ክድምስስ እዩ — እቲ ኣፕሊኬሽን ከም ሓድሽ ክጅምር እዩ። እዚ ክምለስ ኣይክእልን። ርግጸኛ ዲኻ?',
+    confirm_final:'ናይ መወዳእታ ምርግጋጽ፡ ብሓቂ ኩሉ ዳታ ክትድምስስ ደሊኻ ዲኻ?', toast_all_data_cleared:'ኩሉ ዳታ ጸዲኡ',
+    edit_winner_title:'{prize} — ተዓዋቲ ኣርትዕ',
+    edit_winner_sub:'ጌጋ እንተሎ ቅኑዕ ተዓዋቲ ምረጽ ወይ ብምሉእ ኣወግድ። ዝተረጋገጹ ተሳተፍቲ ጥራይ እዮም ዝርኣዩ።',
+    no_one_won:'ሓደ እኳ ኣይተዓወተን', empty_no_confirmed_participants:'ዝተረጋገጹ ተሳተፍቲ የለዉን።', toast_winner_updated:'ተዓዋቲ ተኣሪሙ',
+    prompt_admin_password:'ናይ ኣመሓዳሪ መሕለፊ ቃል፡', toast_admin_unlocked:'ናይ ኣመሓዳሪ ብቕዓት ተኸፊቱ', toast_wrong_password:'ግጉይ መሕለፊ ቃል',
+    copy_number_toast:'ቁጽሪ ተቐዲሑ', loading:'ይጽዓን ኣሎ…',
+    error_load_rounds:'ዙርያታት ክጽዓኑ ኣይተኻእለን', error_load_entries:'ተሳተፍቲ ክጽዓኑ ኣይተኻእለን',
+    error_save_round:'ዙርያ ክቕመጥ ኣይተኻእለን', error_save_entry:'ተሳትፎ ክቕመጥ ኣይተኻእለን',
+    error_delete_round:'ዙርያ ክድምሰስ ኣይተኻእለን', error_clear_data:'ዳታ ክጸሪ ኣይተኻእለን',
+    day_one:'መዓልቲ', day_many:'መዓልትታት',
+  },
+};
+let LANG = localStorage.getItem('game_lang') || 'am';
+function setLang(code){
+  LANG = code;
+  localStorage.setItem('game_lang', code);
+  document.documentElement.lang = code;
+  render();
+}
+function t(key, vars){
+  let s = (T[LANG] && T[LANG][key]) || T.am[key] || key;
+  if (vars) Object.keys(vars).forEach(k=>{ s = s.replace('{'+k+'}', vars[k]); });
+  return s;
+}
+
 /* ============ TELEGRAM (optional — works with or without it) ============ */
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
@@ -358,16 +665,16 @@ function setupRealtimeSync(){
     state.rounds = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     state._roundsReady = true;
     if (state.loaded) render(); else _maybeFinishLoading();
-  }, err=>{ console.error(err); showToast('ዙሮችን መጫን አልተቻለም'); });
+  }, err=>{ console.error(err); showToast(t('error_load_rounds')); });
 
   db.collection('game_entries').orderBy('createdAt','desc').onSnapshot(snap=>{
     state.entries = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     state._entriesReady = true;
     if (state.loaded) render(); else _maybeFinishLoading();
-  }, err=>{ console.error(err); showToast('ተሳታፊዎችን መጫን አልተቻለም'); });
+  }, err=>{ console.error(err); showToast(t('error_load_entries')); });
 }
-async function fsSaveRound(r){ try{ await db.collection('game_rounds').doc(r.id).set(r); } catch(e){ console.error(e); showToast('ዙር ማስቀመጥ አልተቻለም'); } }
-async function fsSaveEntry(e){ try{ await db.collection('game_entries').doc(e.id).set(e); } catch(e2){ console.error(e2); showToast('ተሳትፎ ማስቀመጥ አልተቻለም'); } }
+async function fsSaveRound(r){ try{ await db.collection('game_rounds').doc(r.id).set(r); } catch(e){ console.error(e); showToast(t('error_save_round')); } }
+async function fsSaveEntry(e){ try{ await db.collection('game_entries').doc(e.id).set(e); } catch(e2){ console.error(e2); showToast(t('error_save_entry')); } }
 async function fsDeleteRound(id){
   try {
     const snap = await db.collection('game_entries').where('roundId','==',id).get();
@@ -375,7 +682,7 @@ async function fsDeleteRound(id){
     snap.forEach(doc=>batch.delete(doc.ref));
     batch.delete(db.collection('game_rounds').doc(id));
     await batch.commit();
-  } catch(e){ console.error(e); showToast('ዙር መሰረዝ አልተቻለም'); }
+  } catch(e){ console.error(e); showToast(t('error_delete_round')); }
 }
 async function fsResetAll(){
   try {
@@ -389,7 +696,7 @@ async function fsResetAll(){
       allRefs.slice(i,i+450).forEach(ref=>batch.delete(ref));
       await batch.commit();
     }
-  } catch(e){ console.error(e); showToast('ዳታ ማጽዳት አልተቻለም'); }
+  } catch(e){ console.error(e); showToast(t('error_clear_data')); }
 }
 
 /* ============ HELPERS ============ */
@@ -411,7 +718,7 @@ function fmtCountdown(ms){
   const m = Math.floor((totalSec%3600)/60);
   const s = totalSec%60;
   const p = n=>String(n).padStart(2,'0');
-  if (d>0) return `${d} ${d===1?'ቀን':'ቀናት'} ${p(h)}:${p(m)}:${p(s)}`;
+  if (d>0) return `${d} ${d===1?t('day_one'):t('day_many')} ${p(h)}:${p(m)}:${p(s)}`;
   return h>0 ? `${p(h)}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
 }
 function maskPhone(p){ p = String(p||''); return p.length>=6 ? p.slice(0,4)+'***'+p.slice(-2) : p; }
@@ -444,14 +751,12 @@ function resizeImageFile(file, maxW, cb){
   reader.readAsDataURL(file);
 }
 function copyNumber(){
-  if (navigator.clipboard) navigator.clipboard.writeText(TELEBIRR_NUMBER).then(()=>showToast('ቁጥሩ ተቀድቷል'));
+  if (navigator.clipboard) navigator.clipboard.writeText(TELEBIRR_NUMBER).then(()=>showToast(t('copy_number_toast')));
   else showToast(TELEBIRR_NUMBER);
 }
 function getOpenRounds(){ return state.rounds.filter(r=>r.status==='open').sort((a,b)=>a.endAt-b.endAt); }
 function entriesForRound(id){ return state.entries.filter(e=>e.roundId===id); }
-function statusLabel(s){
-  return { pending_payment:'በክፍያ ላይ', submitted:'በማጣራት ላይ', confirmed:'ተረጋግጧል', rejected:'አልተረጋገጠም', winner:'🏆 አሸናፊ' }[s] || s;
-}
+function statusLabel(s){ return t('status_'+s) || s; }
 function prizeImg(r){ return r.prizeImage || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect width=%22200%22 height=%22200%22 fill=%22%231A2F3D%22/></svg>'; }
 
 /* ============ CONFETTI ============ */
@@ -495,6 +800,11 @@ const ICONS = {
 };
 
 /* ============ TOPBAR / TABBAR ============ */
+function renderLangSelect(){
+  return `<select class="lang-select" onchange="setLang(this.value)" title="Language">
+    ${LANGS.map(l=>`<option value="${l.code}" ${LANG===l.code?'selected':''}>${l.label}</option>`).join('')}
+  </select>`;
+}
 function renderTopbar(){
   const adminBtn = `<button class="icon-round-btn" onclick="onGearClick()" title="Admin">${ICONS.gear}</button>`;
   return `
@@ -502,29 +812,29 @@ function renderTopbar(){
     <div class="brand">
       <div class="brand-row">
         <span class="brand-logo">🎯</span>
-        <span class="name">ትንሹ ቁጥር</span>
+        <span class="name">${t('brand_name')}</span>
       </div>
-      <div class="sub">ልዩ የሆነውን ትንሹን ቁጥር ገምት, አሸንፍ!</div>
+      <div class="sub">${t('brand_sub')}</div>
     </div>
-    <div class="topbar-right">${adminBtn}</div>
+    <div class="topbar-right">${renderLangSelect()}${adminBtn}</div>
   </div>`;
 }
 function onGearClick(){
   if (state.isAdmin){ go('admin'); return; }
-  const pw = prompt('የAስተዳዳሪ የይለፍ ቃል፡');
+  const pw = prompt(t('prompt_admin_password'));
   if (pw === null) return;
-  if (pw === ADMIN_PASSWORD){ state.isAdmin = true; sessionStorage.setItem('isAdmin','1'); showToast('የAስተዳዳሪ መዳረሻ ተከፍቷል'); go('admin'); }
-  else showToast('የተሳሳተ የይለፍ ቃል');
+  if (pw === ADMIN_PASSWORD){ state.isAdmin = true; sessionStorage.setItem('isAdmin','1'); showToast(t('toast_admin_unlocked')); go('admin'); }
+  else showToast(t('toast_wrong_password'));
 }
 function renderTabbar(active){
   const tabs = [
-    {id:'home', label:'ቤት', icon:ICONS.home},
-    {id:'myentry', label:'የኔ ተሳትፎ', icon:ICONS.ticket},
-    {id:'winners', label:'አሸናፊዎች', icon:ICONS.trophy},
+    {id:'home', label:t('tab_home'), icon:ICONS.home},
+    {id:'myentry', label:t('tab_myentry'), icon:ICONS.ticket},
+    {id:'winners', label:t('tab_winners'), icon:ICONS.trophy},
   ];
-  return `<div class="tabbar">${tabs.map(t=>`
-    <div class="tab ${active===t.id?'active':''}" onclick="go('${t.id}')">
-      ${t.icon}<span>${t.label}</span>
+  return `<div class="tabbar">${tabs.map(tab=>`
+    <div class="tab ${active===tab.id?'active':''}" onclick="go('${tab.id}')">
+      ${tab.icon}<span>${tab.label}</span>
     </div>`).join('')}</div>`;
 }
 
@@ -535,7 +845,7 @@ function renderHome(){
   ${renderTopbar()}
   <div class="round-wrap">
     ${rounds.length===0 ? `
-    <div class="no-round"><span class="big-ic">🎲</span><span class="serif">ምንም ክፍት ዙር የለም</span>የሚቀጥለው ዙር በቅርቡ ይጀምራል፣ ትንሽ ቆይተህ ተመልከት።</div>
+    <div class="no-round"><span class="big-ic">🎲</span><span class="serif">${t('no_round_title')}</span>${t('no_round_sub')}</div>
     ` : rounds.map(round=>{
       const remain = round.endAt - Date.now();
       const isOpen = remain > 0;
@@ -544,7 +854,7 @@ function renderHome(){
       <div class="prize-card">
         <div class="prize-media">
           <img src="${prizeImg(round)}" alt="">
-          <div class="prize-ribbon">🏆 የዙር ሽልማት</div>
+          <div class="prize-ribbon">${t('prize_ribbon')}</div>
         </div>
         <div class="prize-body">
           <div class="prize-name">${escapeHtml(round.prizeName)}</div>
@@ -552,31 +862,31 @@ function renderHome(){
           <div class="stat-row">
             <div class="stat-box timer ${urgent?'urgent':''}" id="timerBox-${round.id}">
               <div class="stat-val" id="countdownVal-${round.id}">${isOpen ? fmtCountdown(remain) : '00:00'}</div>
-              <div class="stat-lbl">🕒 ቀሪ ጊዜ</div>
+              <div class="stat-lbl">${t('stat_time_left')}</div>
             </div>
             <div class="stat-box">
               <div class="stat-val">${entriesForRound(round.id).length}</div>
-              <div class="stat-lbl">👥 ተሳታፊዎች</div>
+              <div class="stat-lbl">${t('stat_participants')}</div>
             </div>
             <div class="stat-box">
               <div class="stat-val">${fmt(round.entryFee)}</div>
-              <div class="stat-lbl">💰 ብር (መግቢያ)</div>
+              <div class="stat-lbl">${t('stat_entry_fee')}</div>
             </div>
           </div>
-          <button class="btn-primary" ${isOpen?'':'disabled'} onclick="startJoin('${round.id}')">${isOpen ? '🎲 ተሳተፍ' : 'ዙሩ ተጠናቋል'}</button>
-          ${isOpen ? `<div class="hint-chip">🔁 በተደጋጋሚ ጊዜ መጫወት ትችላለህ</div>` : ''}
+          <button class="btn-primary" ${isOpen?'':'disabled'} onclick="startJoin('${round.id}')">${isOpen ? t('btn_play') : t('round_closed')}</button>
+          ${isOpen ? `<div class="hint-chip">${t('hint_replay')}</div>` : ''}
         </div>
       </div>`;
     }).join('')}
   </div>
   <div class="rules-box">
-    <div class="rt">🎮 የጨዋታው ደንብ</div>
-    <div class="rule-item"><span class="rule-ic">🎯</span><span>ከ1.00 እስከ 1000.00 ውስጥ ሁለት አሃዝ ያለው ቁጥር ምረጥ (ለምሳሌ፡ 12.45)።</span></div>
-    <div class="rule-item"><span class="rule-ic">🏆</span><span>ማንም ሌላ ሰው ካልመረጠው (ልዩ ከሆነ) ቁጥሮች ውስጥ ትንሹን የመረጠው ያሸንፋል። ሁለት ሰዎች ተመሳሳይ ቁጥር ከመረጡ ያ ቁጥር ውድቅ ይሆናል።</span></div>
-    <div class="rule-item"><span class="rule-ic">🔁</span><span>በተደጋጋሚ ጊዜ መጫወት ትችላለህ! እያንዳንዱ ሙከራ የራሱ ክፍያ ይፈልጋል።</span></div>
-    <div class="rule-item"><span class="rule-ic">🚫</span><span>ተጫዋቹ ክፍያውን ካልፈጸመ ወይም ካልተረጋገጠ ቁጥሩ ውድቅ ይደረጋል።</span></div>
+    <div class="rt">${t('rules_title')}</div>
+    <div class="rule-item"><span class="rule-ic">🎯</span><span>${t('rule1')}</span></div>
+    <div class="rule-item"><span class="rule-ic">🏆</span><span>${t('rule2')}</span></div>
+    <div class="rule-item"><span class="rule-ic">🔁</span><span>${t('rule3')}</span></div>
+    <div class="rule-item"><span class="rule-ic">🚫</span><span>${t('rule4')}</span></div>
   </div>
-  <div class="footer-note"><a onclick="onGearClick()">የAስተዳዳሪ መግቢያ</a></div>
+  <div class="footer-note"><a onclick="onGearClick()">${t('admin_login_link')}</a></div>
   ${renderTabbar('home')}`;
 }
 function tickTimer(){
@@ -600,7 +910,7 @@ setInterval(tickTimer, 1000);
 /* ============ JOIN FLOW ============ */
 function startJoin(roundId){
   const round = state.rounds.find(r=>r.id===roundId);
-  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast(t('toast_round_closed')); go('home'); return; }
   state.joiningRoundId = roundId;
   go('join');
 }
@@ -608,35 +918,35 @@ function renderJoin(){
   const round = state.rounds.find(r=>r.id===state.joiningRoundId);
   if (!round || round.status!=='open'){ go('home'); return ''; }
   return `
-  <div class="back-btn"><button onclick="go('home')">&rarr; ወደ ኋላ</button></div>
+  <div class="back-btn"><button onclick="go('home')">&rarr; ${t('back')}</button></div>
   <div class="form-wrap">
-    <h2 class="serif" style="margin:10px 0 6px;">ተሳተፍ</h2>
-    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">ለ &laquo;<strong>${escapeHtml(round.prizeName)}</strong>&raquo; ትሳተፋለህ። ስምህን፣ ስልክ ቁጥርህን እና የመረጥከውን ቁጥር አስገባ።</p>
+    <h2 class="serif" style="margin:10px 0 6px;">${t('join_title')}</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 20px;">${t('join_intro',{prize:escapeHtml(round.prizeName)})}</p>
     <div class="field">
-      <label>ሙሉ ስም</label>
-      <input type="text" id="joinName" placeholder="ለምሳሌ፡ አበበ ከበደ" value="${escapeAttr(state.player.name || tgFullName() || '')}">
+      <label>${t('label_fullname')}</label>
+      <input type="text" id="joinName" placeholder="${t('placeholder_name')}" value="${escapeAttr(state.player.name || tgFullName() || '')}">
     </div>
     <div class="field">
-      <label>ስልክ ቁጥር</label>
+      <label>${t('label_phone')}</label>
       <input type="tel" id="joinPhone" placeholder="09XXXXXXXX" value="${escapeAttr(state.player.phone||'')}">
     </div>
     <div class="field">
-      <label>ቁጥርህን ምረጥ (1.00 - 1000.00)</label>
-      <input type="number" id="joinGuess" min="1" max="1000" step="0.01" inputmode="decimal" placeholder="ለምሳሌ፡ 12.45">
-      <div class="hint">ምክር፡ ልዩ ሊሆን የሚችል ትንሽ ቁጥር ምረጥ። ሁለት አሃዝ ድረስ (ለምሳሌ 3.14) መጠቀም ትችላለህ።</div>
+      <label>${t('label_pick_number')}</label>
+      <input type="number" id="joinGuess" min="1" max="1000" step="0.01" inputmode="decimal" placeholder="${t('placeholder_eg1245')}">
+      <div class="hint">${t('hint_pick')}</div>
     </div>
   </div>
   <div class="fixed-bar">
-    <button class="btn-primary" onclick="submitJoin()">ቀጥል ወደ ክፍያ</button>
+    <button class="btn-primary" onclick="submitJoin()">${t('btn_continue_payment')}</button>
   </div>`;
 }
 function submitJoin(){
   const name = val('joinName'), phone = val('joinPhone');
   const guess = parseGuessInput(val('joinGuess'));
-  if (!name || !phone){ showToast('ስም እና ስልክ ቁጥር ያስፈልጋል'); return; }
-  if (guess === null){ showToast('ከ1.00 እስከ 1000.00 ትክክለኛ ቁጥር አስገባ'); return; }
+  if (!name || !phone){ showToast(t('toast_need_name_phone')); return; }
+  if (guess === null){ showToast(t('toast_valid_number')); return; }
   const round = state.rounds.find(r=>r.id===state.joiningRoundId);
-  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast('ዙሩ ተጠናቋል'); go('home'); return; }
+  if (!round || round.status!=='open' || Date.now() >= round.endAt){ showToast(t('toast_round_closed')); go('home'); return; }
   savePlayer(name, phone);
   const entry = { id: uid().toUpperCase(), roundId: round.id, name, phone, guess, receipt:null, note:'', status:'pending_payment', createdAt: Date.now() };
   state.entries.unshift(entry);
@@ -652,37 +962,37 @@ function renderPay(){
   const round = entry ? state.rounds.find(r=>r.id===entry.roundId) : null;
   if (!entry || !round){ go('home'); return ''; }
   return `
-  <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+  <div class="back-btn"><button onclick="go('myentry')">&rarr; ${t('myentry_title')}</button></div>
   <div class="pay-wrap">
-    <h2 class="serif" style="margin:10px 0 4px;">ክፍያ ፈጽም</h2>
-    <p style="color:var(--ink-soft); font-size:13px; margin:0 0 14px;">ሽልማት፡ ${escapeHtml(round.prizeName)} &middot; የገመትከው ቁጥር፡ ${fmtGuess(entry.guess)}</p>
-    <div class="note-box" style="margin:0 0 16px;">ይህ ድረ-ገጽ በራሱ ገንዘብ አይቀበልም። ገንዘቡን በቴሌብር በስልክህ ራስህ ትልካለህ፣ ከዚያ ማረጋገጫውን (ደረሰኝ) እዚሁ ትሰቅላለህ።</div>
+    <h2 class="serif" style="margin:10px 0 4px;">${t('pay_title')}</h2>
+    <p style="color:var(--ink-soft); font-size:13px; margin:0 0 14px;">${t('kv_prize')}: ${escapeHtml(round.prizeName)} &middot; ${t('entry_number_label')} ${fmtGuess(entry.guess)}</p>
+    <div class="note-box" style="margin:0 0 16px;">${t('note_manual_payment')}</div>
 
     <div class="amount-box">
-      <div class="amount-lbl">የሚላከው መጠን</div>
-      <div class="amount-val">${fmt(round.entryFee)} <span>ብር</span></div>
+      <div class="amount-lbl">${t('amount_label')}</div>
+      <div class="amount-val">${fmt(round.entryFee)} <span>${t('currency')}</span></div>
     </div>
 
     <div class="telebirr-card">
-      <div class="tb-label">📲 የቴሌብር ስልክ ቁጥር (ወደዚህ ላክ)</div>
+      <div class="tb-label">${t('telebirr_number_label')}</div>
       <div class="telebirr-number-row">
         <span class="telebirr-number">${TELEBIRR_NUMBER}</span>
-        <button class="copy-btn" onclick="copyNumber()">ቅዳ</button>
+        <button class="copy-btn" onclick="copyNumber()">${t('copy')}</button>
       </div>
       <ol class="tb-steps">
-        <li>የቴሌብር መተግበሪያውን ክፈት &mdash; ወይም ያለ መተግበሪያ <strong>*127#</strong> ደውል</li>
-        <li>«Send Money» / «ገንዘብ ላክ» የሚለውን ምረጥ</li>
-        <li>ስልክ ቁጥር <strong>${TELEBIRR_NUMBER}</strong> አስገባ</li>
-        <li>መጠን <strong>${fmt(round.entryFee)} ብር</strong> አስገባና ላክ (ይህ የገመትከው ቁጥር ${fmtGuess(entry.guess)} አይደለም &mdash; የመግቢያ ክፍያው ብቻ ነው)</li>
-        <li>ከላክህ በኋላ የሚመጣውን የቴሌብር ማረጋገጫ ገጽ ስክሪንሾት አድርግ</li>
+        <li>${t('step1')}</li>
+        <li>${t('step2')}</li>
+        <li>${t('step3',{num:TELEBIRR_NUMBER})}</li>
+        <li>${t('step4',{fee:fmt(round.entryFee), guess:fmtGuess(entry.guess)})}</li>
+        <li>${t('step5')}</li>
       </ol>
-      <div class="ref-note">ማጣቀሻ (አማራጭ፣ ለራሳችን መዝገብ ብቻ)፡ ተሳትፎ #${entry.id}</div>
+      <div class="ref-note">${t('ref_note',{id:entry.id})}</div>
     </div>
 
-    <div class="note-box">ገንዘቡን ከላክህ እና ስክሪንሾቱን ካነሳህ በኋላ ከታች ያለውን ቁልፍ ተጫን።</div>
+    <div class="note-box">${t('note_final')}</div>
   </div>
   <div class="fixed-bar">
-    <button class="btn-primary" onclick="go('upload')">✅ ከፍያለሁ &mdash; ደረሰኝ ልስቀል</button>
+    <button class="btn-primary" onclick="go('upload')">${t('btn_paid')}</button>
   </div>`;
 }
 
@@ -692,20 +1002,20 @@ function renderUpload(){
   if (!entry){ go('home'); return ''; }
   const hasImg = !!state.pendingImageData;
   return `
-  <div class="back-btn"><button onclick="go('pay')">&rarr; ወደ ኋላ</button></div>
+  <div class="back-btn"><button onclick="go('pay')">&rarr; ${t('back')}</button></div>
   <div class="upload-wrap">
-    <h2 class="serif" style="margin:10px 0 6px;">የክፍያ ደረሰኝ ስቀል</h2>
-    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">የቴሌብር ማረጋገጫህን ፎቶ ወይም ቅጽበታዊ ገጽ እይታ አስገባ፣ ክፍያህን እናረጋግጥልሃለን።</p>
+    <h2 class="serif" style="margin:10px 0 6px;">${t('upload_title')}</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">${t('upload_sub')}</p>
     ${hasImg ? `<img class="receipt-preview" src="${state.pendingImageData}">` : ''}
     <div class="drop-zone ${hasImg?'has-file':''}" onclick="document.getElementById('receiptFile').click()">
       ${ICONS.upload}
-      <div class="dz-text">${hasImg ? 'ሌላ ምስል ለመምረጥ ንካ' : 'ምስል ለመምረጥ ንካ'}</div>
+      <div class="dz-text">${hasImg ? t('dz_change') : t('dz_choose')}</div>
     </div>
     <input type="file" id="receiptFile" accept="image/*" style="display:none" onchange="onReceiptChosen(event)">
-    <textarea id="entryNote" placeholder="ተጨማሪ መረጃ ካለ (አማራጭ)"></textarea>
+    <textarea id="entryNote" placeholder="${t('note_placeholder')}"></textarea>
   </div>
   <div class="fixed-bar">
-    <button class="btn-primary" ${hasImg?'':'disabled'} onclick="submitReceipt()">ደረሰኝ አስገባ</button>
+    <button class="btn-primary" ${hasImg?'':'disabled'} onclick="submitReceipt()">${t('btn_submit_receipt')}</button>
   </div>`;
 }
 function onReceiptChosen(e){
@@ -730,11 +1040,11 @@ function renderStatus(){
   return `
   <div class="winner-banner">
     <span class="big-ic">📨</span>
-    <div class="serif">ደረሰኝ ገብቷል!</div>
-    <p>ክፍያህ በቅርቡ ይረጋገጣል። ውጤቱን ለማየት ማንኛውም ጊዜ ወደ "የኔ ተሳትፎ" ትር ተመለስ።</p>
+    <div class="serif">${t('status_title')}</div>
+    <p>${t('status_sub')}</p>
   </div>
   <div class="fixed-bar">
-    <button class="btn-primary" onclick="go('home')">ወደ ቤት ተመለስ</button>
+    <button class="btn-primary" onclick="go('home')">${t('btn_back_home')}</button>
   </div>`;
 }
 
@@ -743,16 +1053,16 @@ function renderMyEntry(){
   const mine = state.entries.filter(e=>state.myEntryIds.includes(e.id) || (state.player.phone && e.phone===state.player.phone))
     .sort((a,b)=>b.createdAt-a.createdAt);
   return `
-  <div class="topbar"><div class="brand"><div class="name">የኔ ተሳትፎ</div></div></div>
-  ${mine.length===0 ? `<div class="empty"><span class="serif">እስካሁን አልተሳተፍክም</span>ወደ ቤት ሄደህ የአሁኑን ዙር ተቀላቀል።</div>` :
+  <div class="topbar"><div class="brand"><div class="name">${t('myentry_title')}</div></div></div>
+  ${mine.length===0 ? `<div class="empty"><span class="serif">${t('empty_no_entries_title')}</span>${t('empty_no_entries_sub')}</div>` :
   mine.map(e=>{
     const round = state.rounds.find(r=>r.id===e.roundId);
     return `
     <div class="entry-card ${e.status==='winner'?'winner':''}" onclick="viewEntry('${e.id}')">
       <div class="entry-top">
         <div>
-          <div class="entry-prize">${round ? escapeHtml(round.prizeName) : 'ዙር'}</div>
-          <div class="entry-sub">ቁጥርህ፡ ${fmtGuess(e.guess)}</div>
+          <div class="entry-prize">${round ? escapeHtml(round.prizeName) : t('default_round_word')}</div>
+          <div class="entry-sub">${t('entry_number_label')} ${fmtGuess(e.guess)}</div>
         </div>
         <span class="status-badge status-${e.status}">${statusLabel(e.status)}</span>
       </div>
@@ -767,37 +1077,37 @@ function renderEntryDetail(){
   const round = state.rounds.find(r=>r.id===e.roundId);
   if (e.status === 'winner'){
     return `
-    <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+    <div class="back-btn"><button onclick="go('myentry')">&rarr; ${t('myentry_title')}</button></div>
     <div class="winner-banner">
       <span class="big-ic">🏆</span>
-      <div class="serif">እንኳን ደስ አለህ! አሸንፈሃል</div>
-      <p>ቁጥርህ <strong>${fmtGuess(e.guess)}</strong> ልዩ እና ትንሹ ነበር። ሽልማትህን (${round?escapeHtml(round.prizeName):''}) ለመቀበል በ ${TELEBIRR_NUMBER} በኩል ወይም በተመዘገበው ስልክ ቁጥርህ በኩል እንገናኝሃለን።</p>
+      <div class="serif">${t('winner_congrats_title')}</div>
+      <p>${t('winner_congrats_body',{guess:fmtGuess(e.guess), prize:round?escapeHtml(round.prizeName):'', phone:TELEBIRR_NUMBER})}</p>
     </div>
-    <div class="fixed-bar"><button class="btn-primary" onclick="go('home')">ወደ ቤት ተመለስ</button></div>`;
+    <div class="fixed-bar"><button class="btn-primary" onclick="go('home')">${t('btn_back_home')}</button></div>`;
   }
   return `
-  <div class="back-btn"><button onclick="go('myentry')">&rarr; የኔ ተሳትፎ</button></div>
+  <div class="back-btn"><button onclick="go('myentry')">&rarr; ${t('myentry_title')}</button></div>
   <div class="pay-wrap">
     <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0 16px;">
-      <h2 class="serif" style="margin:0;">ተሳትፎ #${e.id}</h2>
+      <h2 class="serif" style="margin:0;">${t('entry_hash',{id:e.id})}</h2>
       <span class="status-badge status-${e.status}">${statusLabel(e.status)}</span>
     </div>
-    <div class="kv"><span>ሽልማት</span><b>${round?escapeHtml(round.prizeName):'-'}</b></div>
-    <div class="kv"><span>ቁጥርህ</span><b>${fmtGuess(e.guess)}</b></div>
-    <div class="kv"><span>ስም</span><b>${escapeHtml(e.name)}</b></div>
+    <div class="kv"><span>${t('kv_prize')}</span><b>${round?escapeHtml(round.prizeName):'-'}</b></div>
+    <div class="kv"><span>${t('kv_number')}</span><b>${fmtGuess(e.guess)}</b></div>
+    <div class="kv"><span>${t('kv_name')}</span><b>${escapeHtml(e.name)}</b></div>
     ${e.receipt ? `<img class="order-detail-receipt" style="width:100%; border-radius:12px; margin:14px 0;" src="${e.receipt}">` : ''}
-    ${e.status==='pending_payment' ? `<div class="note-box">ክፍያ ገና አልተጠናቀቀም። ቀጥል ወደ ክፍያ ገጽ ሂድ።</div>` : ''}
-    ${e.status==='rejected' ? `<div class="note-box">ክፍያህ ሊረጋገጥ አልቻለም። እባክህ ደረሰኝህን መልሰህ አረጋግጥ ወይም ድጋፍ አግኝ።</div>` : ''}
+    ${e.status==='pending_payment' ? `<div class="note-box">${t('note_pending_incomplete')}</div>` : ''}
+    ${e.status==='rejected' ? `<div class="note-box">${t('note_rejected')}</div>` : ''}
   </div>
-  ${e.status==='pending_payment' ? `<div class="fixed-bar"><button class="btn-primary" onclick="state.currentEntryId='${e.id}'; go('pay')">ወደ ክፍያ ቀጥል</button></div>` : ''}`;
+  ${e.status==='pending_payment' ? `<div class="fixed-bar"><button class="btn-primary" onclick="state.currentEntryId='${e.id}'; go('pay')">${t('btn_continue_pay')}</button></div>` : ''}`;
 }
 
 /* ============ WINNERS (PUBLIC HISTORY) ============ */
 function renderWinners(){
   const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
   return `
-  <div class="topbar"><div class="brand"><div class="name">ያለፉ አሸናፊዎች</div></div></div>
-  ${closed.length===0 ? `<div class="empty"><span class="serif">እስካሁን አሸናፊ የለም</span>የመጀመሪያው ዙር ሲጠናቀቅ አሸናፊዎች እዚህ ይታያሉ።</div>` :
+  <div class="topbar"><div class="brand"><div class="name">${t('winners_title')}</div></div></div>
+  ${closed.length===0 ? `<div class="empty"><span class="serif">${t('empty_no_winners_title')}</span>${t('empty_no_winners_sub')}</div>` :
   closed.map(r=>{
     const winner = r.winnerEntryId ? state.entries.find(e=>e.id===r.winnerEntryId) : null;
     return `
@@ -806,7 +1116,7 @@ function renderWinners(){
       <img src="${prizeImg(r)}">
       <div style="flex:1;">
         <div class="wname">${escapeHtml(r.prizeName)}</div>
-        <div class="wmeta">${winner ? escapeHtml(winner.name)+' &middot; '+maskPhone(winner.phone) : 'ልዩ አሸናፊ አልነበረም'}</div>
+        <div class="wmeta">${winner ? escapeHtml(winner.name)+' &middot; '+maskPhone(winner.phone) : t('no_unique_winner')}</div>
       </div>
       ${winner ? `<div class="wguess">${fmtGuess(winner.guess)}</div>` : ''}
     </div>`;
@@ -819,10 +1129,10 @@ function renderAdmin(){
   if (!state.isAdmin){ go('home'); return ''; }
   const sub = state._adminTab || 'round';
   return `
-  <div class="section-title">አስተዳደር</div>
+  <div class="section-title">${t('admin_title')}</div>
   <div class="admin-subnav">
-    <button class="${sub==='round'?'active':''}" onclick="state._adminTab='round'; render();">ንቁ ዙሮች</button>
-    <button class="${sub==='history'?'active':''}" onclick="state._adminTab='history'; render();">ታሪክ</button>
+    <button class="${sub==='round'?'active':''}" onclick="state._adminTab='round'; render();">${t('admin_tab_active_rounds')}</button>
+    <button class="${sub==='history'?'active':''}" onclick="state._adminTab='history'; render();">${t('admin_tab_history')}</button>
   </div>
   ${sub==='round' ? renderAdminRound() : renderAdminHistory()}
   ${renderTabbar('')}`;
@@ -831,9 +1141,9 @@ function renderAdminRound(){
   const rounds = getOpenRounds();
   return `
   <div class="form-wrap" style="padding:4px 18px 16px;">
-    <button class="btn-primary" onclick="state.pendingImageData=null; go('admin-round-new')">➕ አዲስ ዙር ጀምር</button>
+    <button class="btn-primary" onclick="state.pendingImageData=null; go('admin-round-new')">${t('btn_new_round')}</button>
   </div>
-  ${rounds.length===0 ? `<div class="empty">በአሁኑ ጊዜ ክፍት ዙር የለም። ከላይ ያለውን ተጭነህ ዙር ጀምር።</div>` :
+  ${rounds.length===0 ? `<div class="empty">${t('no_open_round_admin')}</div>` :
   rounds.map(round=>{
     const remain = round.endAt - Date.now();
     const entries = entriesForRound(round.id);
@@ -844,12 +1154,12 @@ function renderAdminRound(){
       <div class="ae-top">
         <div>
           <div class="ae-name">${escapeHtml(round.prizeName)}</div>
-          <div class="ae-phone">👥 ${entries.length} ተሳታፊዎች &middot; 💰 ${fmt(round.entryFee)} ብር</div>
+          <div class="ae-phone">${t('stat_participants')} ${entries.length} &middot; ${t('stat_entry_fee')} ${fmt(round.entryFee)}</div>
         </div>
         <span class="status-badge status-confirmed">🕒 ${remain>0?fmtCountdown(remain):'00:00'}</span>
       </div>
       <div class="progress-track"><div class="progress-fill" style="width:${progressPct}%;"></div></div>
-      <div class="progress-lbl"><span>የተረጋገጠ ክፍያ</span><span>${confirmedCount}/${entries.length}</span></div>
+      <div class="progress-lbl"><span>${t('progress_confirmed_payment')}</span><span>${confirmedCount}/${entries.length}</span></div>
     </div>`;
   }).join('')}`;
 }
@@ -857,33 +1167,33 @@ function renderAdminRoundNew(){
   if (!state.isAdmin){ go('home'); return ''; }
   const img = state.pendingImageData;
   return `
-  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ወደ ኋላ</button></div>
+  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ${t('back')}</button></div>
   <div class="form-wrap" style="padding-top:14px;">
-    <h2 class="serif" style="margin:0 0 16px;">አዲስ ዙር ጀምር</h2>
+    <h2 class="serif" style="margin:0 0 16px;">${t('new_round_title')}</h2>
     <div class="field">
-      <label>የሽልማት ምስል</label>
+      <label>${t('label_prize_image')}</label>
       <div class="img-picker">
         <img src="${img || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%231A2F3D%22/></svg>'}">
-        <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">ምስል ምረጥ</button>
+        <button class="file-btn" onclick="document.getElementById('prizeImgFile').click()">${t('btn_choose_image')}</button>
         <input type="file" id="prizeImgFile" accept="image/*" style="display:none" onchange="onPrizeImageChosen(event)">
       </div>
     </div>
-    <div class="field"><label>የሽልማት ስም</label><input type="text" id="prizeName" placeholder="ለምሳሌ፡ ኢርፎን / ስልክ / ቲቪ"></div>
-    <div class="field"><label>የሽልማት መግለጫ (አማራጭ)</label><textarea id="prizeDesc" placeholder="አጭር መግለጫ"></textarea></div>
-    <div class="field"><label>የመግቢያ ክፍያ (ብር)</label><input type="number" id="entryFee" placeholder="ለምሳሌ፡ 50"></div>
+    <div class="field"><label>${t('label_prize_name')}</label><input type="text" id="prizeName" placeholder="${t('placeholder_prize_name')}"></div>
+    <div class="field"><label>${t('label_prize_desc')}</label><textarea id="prizeDesc" placeholder="${t('placeholder_short_desc')}"></textarea></div>
+    <div class="field"><label>${t('label_entry_fee')}</label><input type="number" id="entryFee" placeholder="${t('placeholder_eg50')}"></div>
     <div class="field">
-      <label>የዙር ቆይታ</label>
+      <label>${t('label_duration')}</label>
       <div style="display:flex; gap:8px;">
-        <input type="number" id="durationVal" placeholder="ለምሳሌ፡ 2" style="flex:1;">
+        <input type="number" id="durationVal" placeholder="${t('placeholder_eg2')}" style="flex:1;">
         <select id="durationUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:var(--card-2); color:var(--ink);">
-          <option value="minutes">ደቂቃ</option>
-          <option value="hours">ሰዓት</option>
-          <option value="days" selected>ቀን</option>
+          <option value="minutes">${t('unit_minutes')}</option>
+          <option value="hours">${t('unit_hours')}</option>
+          <option value="days" selected>${t('unit_days')}</option>
         </select>
       </div>
     </div>
   </div>
-  <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">ዙር ጀምር</button></div>`;
+  <div class="fixed-bar"><button class="btn-primary" onclick="createRound()">${t('btn_start_round')}</button></div>`;
 }
 function renderAdminRoundDetail(){
   if (!state.isAdmin){ go('home'); return ''; }
@@ -894,7 +1204,7 @@ function renderAdminRoundDetail(){
   const confirmedCount = entries.filter(e=>e.status==='confirmed').length;
   const progressPct = entries.length ? Math.round(confirmedCount/entries.length*100) : 0;
   return `
-  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ወደ ኋላ</button></div>
+  <div class="back-btn"><button onclick="state._adminTab='round'; go('admin')">&rarr; ${t('back')}</button></div>
   <div class="round-wrap" style="padding-top:10px;">
     <div class="prize-card">
       <div class="prize-media">
@@ -903,30 +1213,30 @@ function renderAdminRoundDetail(){
       </div>
       <div class="prize-body">
         <div class="stat-row">
-          <div class="stat-box timer"><div class="stat-val">${remain>0?fmtCountdown(remain):'00:00'}</div><div class="stat-lbl">🕒 ቀሪ ጊዜ</div></div>
-          <div class="stat-box"><div class="stat-val">${entries.length}</div><div class="stat-lbl">👥 ተሳታፊዎች</div></div>
-          <div class="stat-box"><div class="stat-val">${confirmedCount}</div><div class="stat-lbl">✅ የተረጋገጡ</div></div>
+          <div class="stat-box timer"><div class="stat-val">${remain>0?fmtCountdown(remain):'00:00'}</div><div class="stat-lbl">${t('stat_time_left')}</div></div>
+          <div class="stat-box"><div class="stat-val">${entries.length}</div><div class="stat-lbl">${t('stat_participants')}</div></div>
+          <div class="stat-box"><div class="stat-val">${confirmedCount}</div><div class="stat-lbl">${t('label_confirmed')}</div></div>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width:${progressPct}%;"></div></div>
-        <div class="progress-lbl"><span>የተረጋገጠ ክፍያ</span><span>${confirmedCount}/${entries.length}</span></div>
+        <div class="progress-lbl"><span>${t('progress_confirmed_payment')}</span><span>${confirmedCount}/${entries.length}</span></div>
         <div class="field" style="margin:16px 0 0;">
-          <label>ጊዜ አራዝም</label>
+          <label>${t('label_extend_time')}</label>
           <div style="display:flex; gap:8px;">
-            <input type="number" id="extendVal" placeholder="ለምሳሌ፡ 15" style="flex:1;">
+            <input type="number" id="extendVal" placeholder="${t('placeholder_eg15')}" style="flex:1;">
             <select id="extendUnit" style="flex:1; border:1.5px solid var(--line); border-radius:11px; padding:12px 13px; font-size:14.5px; font-family:'Noto Sans Ethiopic',sans-serif; background:var(--card-2); color:var(--ink);">
-              <option value="minutes" selected>ደቂቃ</option>
-              <option value="hours">ሰዓት</option>
-              <option value="days">ቀን</option>
+              <option value="minutes" selected>${t('unit_minutes')}</option>
+              <option value="hours">${t('unit_hours')}</option>
+              <option value="days">${t('unit_days')}</option>
             </select>
-            <button class="btn-secondary" style="flex:0 0 auto; padding:12px 16px;" onclick="extendRound('${round.id}')">➕ አራዝም</button>
+            <button class="btn-secondary" style="flex:0 0 auto; padding:12px 16px;" onclick="extendRound('${round.id}')">${t('btn_extend')}</button>
           </div>
         </div>
-        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600; margin-top:12px;" onclick="closeRoundAndAnnounce('${round.id}')">ዙር ዝጋና አሸናፊ አውጅ</button>
+        <button class="btn-danger" style="width:100%; border-radius:12px; padding:12px; font-weight:600; margin-top:12px;" onclick="closeRoundAndAnnounce('${round.id}')">${t('btn_close_round')}</button>
       </div>
     </div>
   </div>
-  <div class="section-title" style="padding-top:6px;">ተሳታፊዎች</div>
-  ${entries.length===0 ? `<div class="empty">እስካሁን ተሳታፊ የለም።</div>` :
+  <div class="section-title" style="padding-top:6px;">${t('section_participants')}</div>
+  ${entries.length===0 ? `<div class="empty">${t('empty_no_participants')}</div>` :
   entries.map(e=>`
     <div class="admin-entry">
       <div class="ae-top">
@@ -935,11 +1245,11 @@ function renderAdminRoundDetail(){
       </div>
       <div class="ae-guess">${fmtGuess(e.guess)}</div>
       ${e.note ? `<div class="note-box">"${escapeHtml(e.note)}"</div>` : ''}
-      ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}">` : `<div style="font-size:12.5px; color:var(--ink-soft);">ደረሰኝ ገና አልገባም</div>`}
+      ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}">` : `<div style="font-size:12.5px; color:var(--ink-soft);">${t('receipt_not_uploaded')}</div>`}
       ${e.status==='submitted' ? `
       <div class="admin-actions">
-        <button class="btn-danger" onclick="setEntryStatus('${e.id}','rejected')">አትቀበል</button>
-        <button class="btn-primary" style="flex:1;" onclick="setEntryStatus('${e.id}','confirmed')">አረጋግጥ</button>
+        <button class="btn-danger" onclick="setEntryStatus('${e.id}','rejected')">${t('btn_reject')}</button>
+        <button class="btn-primary" style="flex:1;" onclick="setEntryStatus('${e.id}','confirmed')">${t('btn_confirm')}</button>
       </div>` : ''}
     </div>`).join('')}`;
 }
@@ -956,9 +1266,9 @@ function createRound(){
   const durationUnit = (document.getElementById('durationUnit')||{}).value || 'minutes';
   const unitMinutes = { minutes:1, hours:60, days:1440 }[durationUnit] || 1;
   const durationMin = durationVal * unitMinutes;
-  if (!prizeName){ showToast('የሽልማት ስም ያስፈልጋል'); return; }
-  if (!entryFee || entryFee<=0){ showToast('ትክክለኛ የመግቢያ ክፍያ አስገባ'); return; }
-  if (!durationVal || durationVal<=0){ showToast('ትክክለኛ የቆይታ ጊዜ አስገባ'); return; }
+  if (!prizeName){ showToast(t('toast_prize_name_required')); return; }
+  if (!entryFee || entryFee<=0){ showToast(t('toast_valid_fee')); return; }
+  if (!durationVal || durationVal<=0){ showToast(t('toast_valid_duration')); return; }
   const round = {
     id: uid(), prizeName, prizeDesc, prizeImage: state.pendingImageData || null,
     entryFee, durationMinutes: durationMin,
@@ -968,7 +1278,7 @@ function createRound(){
   state.rounds.unshift(round);
   fsSaveRound(round);
   state.pendingImageData = null;
-  showToast('ዙር ተጀምሯል');
+  showToast(t('toast_round_started'));
   state._adminTab = 'round';
   go('admin');
 }
@@ -977,7 +1287,7 @@ function setEntryStatus(id, status){
   if (!e) return;
   e.status = status;
   fsSaveEntry(e);
-  showToast(status==='confirmed' ? 'ተረጋግጧል' : 'ውድቅ ተደርጓል');
+  showToast(status==='confirmed' ? t('toast_confirmed') : t('toast_rejected'));
   render();
 }
 function extendRound(roundId){
@@ -986,17 +1296,17 @@ function extendRound(roundId){
   const extendVal = parseFloat(val('extendVal'));
   const extendUnit = (document.getElementById('extendUnit')||{}).value || 'minutes';
   const unitMinutes = { minutes:1, hours:60, days:1440 }[extendUnit] || 1;
-  if (!extendVal || extendVal<=0){ showToast('ትክክለኛ ጊዜ አስገባ'); return; }
+  if (!extendVal || extendVal<=0){ showToast(t('toast_valid_time')); return; }
   const base = round.endAt > Date.now() ? round.endAt : Date.now();
   round.endAt = base + extendVal*unitMinutes*60000;
   fsSaveRound(round);
-  showToast('ጊዜው ተራዝሟል');
+  showToast(t('toast_extended'));
   render();
 }
 function closeRoundAndAnnounce(roundId){
   const round = state.rounds.find(r=>r.id===roundId);
   if (!round) return;
-  if (!confirm('ዙሩን ዘግተህ አሸናፊ ማወጅ ትፈልጋለህ?')) return;
+  if (!confirm(t('confirm_close_round'))) return;
   const confirmed = entriesForRound(round.id).filter(e=>e.status==='confirmed');
   const counts = {};
   confirmed.forEach(e=>{ counts[e.guess] = (counts[e.guess]||0) + 1; });
@@ -1007,7 +1317,7 @@ function closeRoundAndAnnounce(roundId){
   round.winnerEntryId = winner ? winner.id : null;
   fsSaveRound(round);
   if (winner){ winner.status = 'winner'; fsSaveEntry(winner); }
-  showToast(winner ? `🏆 አሸናፊ፡ ${winner.name} (${fmtGuess(winner.guess)})` : 'ልዩ አሸናፊ አልተገኘም');
+  showToast(winner ? t('toast_winner_announced',{name:winner.name, guess:fmtGuess(winner.guess)}) : t('toast_no_unique_winner'));
   state._adminTab = 'round';
   go('admin');
 }
@@ -1015,41 +1325,41 @@ function renderAdminHistory(){
   const closed = state.rounds.filter(r=>r.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
   return `
   <div class="form-wrap" style="padding:4px 18px 6px;">
-    <button onclick="resetAllData()" style="width:100%; background:var(--card); border:1.5px solid var(--red); color:var(--red); border-radius:12px; padding:12px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;">🗑️ ሁሉንም ዳታ አጽዳ &mdash; እንደ አዲስ ጀምር</button>
+    <button onclick="resetAllData()" style="width:100%; background:var(--card); border:1.5px solid var(--red); color:var(--red); border-radius:12px; padding:12px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif;">${t('btn_clear_all_data')}</button>
   </div>
-  ${closed.length===0 ? `<div class="empty">እስካሁን የተዘጋ ዙር የለም።</div>` :
+  ${closed.length===0 ? `<div class="empty">${t('empty_no_closed_rounds')}</div>` :
   closed.map(r=>{
     const winner = r.winnerEntryId ? state.entries.find(e=>e.id===r.winnerEntryId) : null;
     const total = entriesForRound(r.id).length;
     return `
     <div class="admin-entry">
       <div class="ae-top">
-        <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ተሳታፊዎች &middot; ${fmt(r.entryFee)} ብር</div></div>
+        <div><div class="ae-name">${escapeHtml(r.prizeName)}</div><div class="ae-phone">${total} ${t('word_participants')} &middot; ${fmt(r.entryFee)} ${t('currency')}</div></div>
         <div style="display:flex; gap:6px; flex-shrink:0;">
-          <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft);">✎ አርትዕ</button>
-          <button onclick="deleteHistoryRound('${r.id}')" style="border:1px solid var(--red); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--red);">🗑 ሰርዝ</button>
+          <button onclick="editHistoryRound('${r.id}')" style="border:1px solid var(--line); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--ink-soft);">${t('btn_edit')}</button>
+          <button onclick="deleteHistoryRound('${r.id}')" style="border:1px solid var(--red); background:var(--card); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Noto Sans Ethiopic',sans-serif; color:var(--red);">${t('btn_delete')}</button>
         </div>
       </div>
-      ${winner ? `<div class="kv"><span>አሸናፊ</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${fmtGuess(winner.guess)}</b></div>` : `<div class="kv"><span>ውጤት</span><b>ልዩ አሸናፊ አልነበረም</b></div>`}
+      ${winner ? `<div class="kv"><span>${t('kv_winner')}</span><b>${escapeHtml(winner.name)} (${escapeHtml(winner.phone)}) &mdash; ${fmtGuess(winner.guess)}</b></div>` : `<div class="kv"><span>${t('kv_result')}</span><b>${t('no_unique_winner')}</b></div>`}
     </div>`;
   }).join('')}`;
 }
 function editHistoryRound(id){ state.editingRoundId = id; go('admin-history-edit'); }
 function deleteHistoryRound(id){
-  if (!confirm('ይህን ዙር እና ተያያዥ ተሳትፎዎችን ሙሉ በሙሉ መሰረዝ እርግጠኛ ኖት? ይህን መቀልበስ አይቻልም።')) return;
+  if (!confirm(t('confirm_delete_round'))) return;
   state.rounds = state.rounds.filter(r=>r.id!==id);
   state.entries = state.entries.filter(e=>e.roundId!==id);
   fsDeleteRound(id);
-  showToast('ዙር ተሰርዟል');
+  showToast(t('toast_round_deleted'));
   render();
 }
 function resetAllData(){
-  if (!confirm('ይህ ሁሉንም ዙሮች፣ ተሳትፎዎች እና የአሸናፊዎች ታሪክ ሙሉ በሙሉ ይሰርዛል &mdash; መተግበሪያው ልክ እንደ አዲስ ይጀምራል። ይህን መቀልበስ አይቻልም። እርግጠኛ ኖት?'.replace(/&mdash;/g,'—'))) return;
-  if (!confirm('የመጨረሻ ማረጋገጫ፡ በእርግጥ ሁሉንም ዳታ መሰረዝ ትፈልጋለህ?')) return;
+  if (!confirm(t('confirm_reset_all'))) return;
+  if (!confirm(t('confirm_final'))) return;
   state.rounds = [];
   state.entries = [];
   fsResetAll();
-  showToast('ሁሉም ዳታ ጸድቷል');
+  showToast(t('toast_all_data_cleared'));
   render();
 }
 function renderAdminHistoryEdit(){
@@ -1059,14 +1369,14 @@ function renderAdminHistoryEdit(){
   const candidates = entriesForRound(round.id).filter(e=>e.status==='confirmed' || e.status==='winner').sort((a,b)=>a.guess-b.guess);
   const rowStyle = active => `display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1.5px solid ${active?'var(--teal)':'var(--line)'}; border-radius:12px; cursor:pointer; margin-bottom:8px; background:${active?'var(--teal-soft)':'var(--card)'};`;
   return `
-  <div class="back-btn"><button onclick="state._adminTab='history'; go('admin')">&rarr; ታሪክ</button></div>
+  <div class="back-btn"><button onclick="state._adminTab='history'; go('admin')">&rarr; ${t('admin_tab_history')}</button></div>
   <div class="form-wrap" style="padding-top:4px;">
-    <h2 class="serif" style="margin:10px 0 6px;">${escapeHtml(round.prizeName)} &mdash; አሸናፊ አርትዕ</h2>
-    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">ስህተት ካለ ትክክለኛውን አሸናፊ ምረጥ ወይም ሙሉ በሙሉ አስወግድ። የተረጋገጡ ተሳታፊዎች ብቻ ይታያሉ።</p>
+    <h2 class="serif" style="margin:10px 0 6px;">${t('edit_winner_title',{prize:escapeHtml(round.prizeName)})}</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">${t('edit_winner_sub')}</p>
     <label style="${rowStyle(!round.winnerEntryId)}" onclick="setHistoryWinner(null)">
-      <span style="display:flex; align-items:center; gap:10px;"><input type="radio" name="winnerPick" ${!round.winnerEntryId?'checked':''}><span>ማንም አላሸነፈም</span></span>
+      <span style="display:flex; align-items:center; gap:10px;"><input type="radio" name="winnerPick" ${!round.winnerEntryId?'checked':''}><span>${t('no_one_won')}</span></span>
     </label>
-    ${candidates.length===0 ? `<div class="empty" style="padding:24px 0;">የተረጋገጡ ተሳታፊዎች የሉም።</div>` :
+    ${candidates.length===0 ? `<div class="empty" style="padding:24px 0;">${t('empty_no_confirmed_participants')}</div>` :
     candidates.map(e=>`
     <label style="${rowStyle(round.winnerEntryId===e.id)}" onclick="setHistoryWinner('${e.id}')">
       <span style="display:flex; align-items:center; gap:10px;"><input type="radio" name="winnerPick" ${round.winnerEntryId===e.id?'checked':''}><span>${escapeHtml(e.name)} &middot; ${escapeHtml(e.phone)}</span></span>
@@ -1089,14 +1399,14 @@ function setHistoryWinner(entryId){
     if (next){ next.status = 'winner'; fsSaveEntry(next); }
   }
   fsSaveRound(round);
-  showToast('አሸናፊ ተስተካክሏል');
+  showToast(t('toast_winner_updated'));
   render();
 }
 
 /* ============ ROUTER ============ */
 function render(){
   const app = document.getElementById('app');
-  if (!state.loaded){ app.innerHTML = `<div class="loading-wrap"><div class="spinner"></div><span>በመጫን ላይ…</span></div>`; return; }
+  if (!state.loaded){ app.innerHTML = `<div class="loading-wrap"><div class="spinner"></div><span>${t('loading')}</span></div>`; return; }
   const map = {
     'home': renderHome, 'join': renderJoin, 'pay': renderPay, 'upload': renderUpload, 'status': renderStatus,
     'myentry': renderMyEntry, 'entry-detail': renderEntryDetail, 'winners': renderWinners,
@@ -1110,6 +1420,7 @@ function render(){
 
 /* ============ BOOT ============ */
 (function boot(){
+  document.documentElement.lang = LANG;
   render();
   setupRealtimeSync();
 })();
