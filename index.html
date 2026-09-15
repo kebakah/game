@@ -318,6 +318,7 @@
 /* ============ CONFIG ============ */
 const ADMIN_PASSWORD = 'gebeya2024';
 const TELEBIRR_NUMBER = '914703628';
+const DISPLAY_PARTICIPANT_BASE = 30;
 // Add your Telegram @username(s) here (no @) to get auto-admin access when opening via the Telegram bot.
 const ADMIN_USERNAMES = [];
 
@@ -865,7 +866,7 @@ function renderHome(){
               <div class="stat-lbl">${t('stat_time_left')}</div>
             </div>
             <div class="stat-box">
-              <div class="stat-val">${entriesForRound(round.id).length}</div>
+              <div class="stat-val">${DISPLAY_PARTICIPANT_BASE + entriesForRound(round.id).length}</div>
               <div class="stat-lbl">${t('stat_participants')}</div>
             </div>
             <div class="stat-box">
