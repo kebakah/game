@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
+<link rel="preconnect" href="https://telegram.org" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ትንሹ ቁጥር - ጨዋታ</title>
@@ -854,7 +859,7 @@ function renderHome(){
       return `
       <div class="prize-card">
         <div class="prize-media">
-          <img src="${prizeImg(round)}" alt="">
+          <img src="${prizeImg(round)}" alt="" loading="lazy" decoding="async">
           <div class="prize-ribbon">${t('prize_ribbon')}</div>
         </div>
         <div class="prize-body">
@@ -1007,7 +1012,7 @@ function renderUpload(){
   <div class="upload-wrap">
     <h2 class="serif" style="margin:10px 0 6px;">${t('upload_title')}</h2>
     <p style="color:var(--ink-soft); font-size:13.5px; margin:0 0 18px;">${t('upload_sub')}</p>
-    ${hasImg ? `<img class="receipt-preview" src="${state.pendingImageData}">` : ''}
+    ${hasImg ? `<img class="receipt-preview" src="${state.pendingImageData}" loading="lazy" decoding="async">` : ''}
     <div class="drop-zone ${hasImg?'has-file':''}" onclick="document.getElementById('receiptFile').click()">
       ${ICONS.upload}
       <div class="dz-text">${hasImg ? t('dz_change') : t('dz_choose')}</div>
@@ -1096,7 +1101,7 @@ function renderEntryDetail(){
     <div class="kv"><span>${t('kv_prize')}</span><b>${round?escapeHtml(round.prizeName):'-'}</b></div>
     <div class="kv"><span>${t('kv_number')}</span><b>${fmtGuess(e.guess)}</b></div>
     <div class="kv"><span>${t('kv_name')}</span><b>${escapeHtml(e.name)}</b></div>
-    ${e.receipt ? `<img class="order-detail-receipt" style="width:100%; border-radius:12px; margin:14px 0;" src="${e.receipt}">` : ''}
+    ${e.receipt ? `<img class="order-detail-receipt" style="width:100%; border-radius:12px; margin:14px 0;" src="${e.receipt}" loading="lazy" decoding="async">` : ''}
     ${e.status==='pending_payment' ? `<div class="note-box">${t('note_pending_incomplete')}</div>` : ''}
     ${e.status==='rejected' ? `<div class="note-box">${t('note_rejected')}</div>` : ''}
   </div>
@@ -1114,7 +1119,7 @@ function renderWinners(){
     return `
     <div class="wcard">
       <span class="wtrophy">${winner ? '🏆' : '➖'}</span>
-      <img src="${prizeImg(r)}">
+      <img src="${prizeImg(r)}" loading="lazy" decoding="async">
       <div style="flex:1;">
         <div class="wname">${escapeHtml(r.prizeName)}</div>
         <div class="wmeta">${winner ? escapeHtml(winner.name)+' &middot; '+maskPhone(winner.phone) : t('no_unique_winner')}</div>
@@ -1209,7 +1214,7 @@ function renderAdminRoundDetail(){
   <div class="round-wrap" style="padding-top:10px;">
     <div class="prize-card">
       <div class="prize-media">
-        <img src="${prizeImg(round)}" alt="">
+        <img src="${prizeImg(round)}" alt="" loading="lazy" decoding="async">
         <div class="prize-ribbon">🏆 ${escapeHtml(round.prizeName)}</div>
       </div>
       <div class="prize-body">
@@ -1246,7 +1251,7 @@ function renderAdminRoundDetail(){
       </div>
       <div class="ae-guess">${fmtGuess(e.guess)}</div>
       ${e.note ? `<div class="note-box">"${escapeHtml(e.note)}"</div>` : ''}
-      ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}">` : `<div style="font-size:12.5px; color:var(--ink-soft);">${t('receipt_not_uploaded')}</div>`}
+      ${e.receipt ? `<img class="receipt-thumb" src="${e.receipt}" loading="lazy" decoding="async">` : `<div style="font-size:12.5px; color:var(--ink-soft);">${t('receipt_not_uploaded')}</div>`}
       ${e.status==='submitted' ? `
       <div class="admin-actions">
         <button class="btn-danger" onclick="setEntryStatus('${e.id}','rejected')">${t('btn_reject')}</button>
